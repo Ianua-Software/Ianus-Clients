@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <TargetFrameworks>net462</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package metadata -->
+    <PackageId>Ianua.Ianus.Dataverse.Client.Light</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Ianua Software</Authors>
+    <Company>Ianua Software</Company>
+    <Description>.NET client for validating Ianus Guard licenses inside pluginassembly plugins</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Ianua-Software/Ianus-Clients</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://www.ianusguard.com</PackageProjectUrl>
+    <PackageOutputPath>bin\Release</PackageOutputPath>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageIcon>icon.png</PackageIcon>
+    <Copyright>Ianua Software</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.56" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\"/>
+    <None Include="icon.png" Pack="true" PackagePath="\"/>
+    <Compile Remove="**\*.cs" />
+  </ItemGroup>
+
+  <!-- Include files in both /contentFiles and /content -->
+  <ItemGroup>
+    <!-- Files for modern SDK-style projects -->
+    <Content Include="IanusValidationRequest.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
+    <Content Include="../ianus-client/License.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
+    <Content Include="LicenseValidator.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
+
+    <!-- Files for legacy projects -->
+    <Content Include="IanusValidationRequest.cs" Pack="true" PackagePath="content/" BuildAction="None" />
+    <Content Include="../ianus-client/License.cs" Pack="true" PackagePath="content/" BuildAction="None" />
+    <Content Include="LicenseValidator.cs" Pack="true" PackagePath="content/" BuildAction="None" />
+  </ItemGroup>
+
+</Project>

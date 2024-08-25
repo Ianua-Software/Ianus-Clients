@@ -1,0 +1,21 @@
+{
+  "name": "@ianua/ianus-license-generator",
+  "version": "1.0.2",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "ianus-license-generator": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^11.1.0",
+    "yargs": "^18.0.0"
+  }
+}

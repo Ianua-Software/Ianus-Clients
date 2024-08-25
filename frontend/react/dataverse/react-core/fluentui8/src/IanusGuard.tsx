@@ -1,0 +1,205 @@
+import * as React from 'react';
+
+import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
+import { MessageBarButton } from '@fluentui/react/lib/Button';
+import { Spinner } from '@fluentui/react/lib/Spinner';
+
+import { validateLicense } from '../../../../../ianus-core/LicenseValidation';
+import { LicenseValidationResult } from '../../../../../ianus-core/LicenseValidationResult';
+
+import { LicenseDialog } from './LicenseDialog';
+import { useLicenseContext } from './IanusLicenseStateProvider';
+import { DataverseLicenseValidationResult } from './DataverseLicenseValidationResult';
+
+export interface IIanusGuardProps {
+    publisherId: string;
+    productId: string;
+    publicKeys: string[];
+    environmentType: string;
+    environmentIdentifier: string | ComponentFramework.WebApi;
+    dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
+    onLicenseValidated?: (result: LicenseValidationResult) => unknown;
+}
+
+export const isWebApi = (dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet | string): dataProvider is ComponentFramework.WebApi => {
+    return (dataProvider as ComponentFramework.WebApi).retrieveMultipleRecords !== undefined;
+};
+
+export const isDataset = (dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet | string): dataProvider is ComponentFramework.PropertyTypes.DataSet => {
+    return (dataProvider as ComponentFramework.PropertyTypes.DataSet).records !== undefined;
+};
+
+export const acquireLicenses = async (publisherId: string, productId: string, dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet): Promise<ComponentFramework.WebApi.Entity[]> => {
+    const licenseIdentifier = `${publisherId}_${productId}`
+
+    if (isWebApi(dataProvider)) {
+        const response = await dataProvider.retrieveMultipleRecords("ian_license", `?$filter=ian_identifier eq '${licenseIdentifier}' and statecode eq 0`);
+        return response.entities;
+    }
+    else if (isDataset(dataProvider)) {
+        if (dataProvider.records.length) {
+            const record = dataProvider.records[0];
+
+            if (record.getNamedReference().etn !== "ian_license") {
+                throw new Error("You need to pass the 'ian_license' entity as data source for LicenseDataset when using a dataset as value")
+            }
+        }
+
+        return Object.values(dataProvider.records)
+            .filter(r => r.getValue("ian_identifier") === licenseIdentifier)
+            .map(r => ({ ian_licenseid: r.getValue("ian_licenseid"), ian_identifier: r.getValue("ian_identifier"), ian_key: r.getValue("ian_key") } as ComponentFramework.WebApi.Entity));
+    }
+    else {
+        throw new Error(`The 'dataProvider' prop must be either of type ComponentFramework.WebApi or ComponentFramework.PropertyTypes.Dataset. You passed '${typeof dataProvider}'.`)
+    }
+};
+
+const updateResultIfDefined = ( result: LicenseValidationResult, onLicenseValidated: ( ( result: LicenseValidationResult ) => unknown ) | undefined ) => {
+    if (onLicenseValidated) {
+        try
+        {
+            onLicenseValidated(result);
+        }
+        catch( e ) {
+            if (e && e instanceof Error) {
+                console.error(`Error while calling onLicenseValidated: '${e.message}'`);
+            }
+        }
+    }
+};
+
+const fetchOrganizationIdFromWebApi = async (webApi: ComponentFramework.WebApi) => {
+    const results = await webApi.retrieveMultipleRecords("organization", "?$top=1&$select=organizationid");
+
+    if (!results.entities.length)
+    {
+        return null;
+    }
+
+    const organization = results.entities[0];
+    return organization.organizationid;
+};
+
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys, environmentType, environmentIdentifier, dataProvider, onLicenseValidated, children }) => {
+    const [ licenseState, licenseDispatch ] = useLicenseContext();
+
+    const onSettingsFinally = () => {
+        licenseDispatch({ type: "setLicenseDialogVisible", payload: false });
+        initLicenseValidation();
+    };
+
+    const runValidation = React.useCallback(async (): Promise<DataverseLicenseValidationResult> => {
+        try {
+            if (!productId) {
+                return {
+                    isValid: false,
+                    isTerminalError: true,
+                    reason: "No productId found, pass a productId as prop!"
+                };
+            }
+
+            if (!publicKeys || !publicKeys.length) {
+                return {
+                    isValid: false,
+                    isTerminalError: true,
+                    reason: "No public key found, pass a valid public key as prop!"
+                };
+            }
+
+            const licenses = await acquireLicenses(publisherId, productId, dataProvider);
+
+            if (!licenses.length) {
+                return {
+                    isValid: false,
+                    isTerminalError: false,
+                    reason: "No license found!"
+                };
+            }
+
+            if (licenses.length > 1) {
+                return {
+                    isValid: false,
+                    isTerminalError: true,
+                    reason: `Multiple active licenses for '${publisherId}_${productId}' found, please make sure there is only one active license`
+                };
+            }
+
+            const licenseRecord = licenses[0];
+            const resolvedEnvironmentIdentifier = ( isWebApi(environmentIdentifier) ? await fetchOrganizationIdFromWebApi(environmentIdentifier) : environmentIdentifier as string );
+
+            const validationResult = await validateLicense(publisherId, productId, environmentType, resolvedEnvironmentIdentifier, publicKeys, licenseRecord.ian_key);
+
+            return {
+                ...validationResult,
+                licenseId: licenseRecord.ian_licenseid,
+                licenseKey: licenseRecord.ian_key,
+            };
+        }
+        catch (e) {
+            return {
+                isValid: false,
+                isTerminalError: true,
+                reason: (e as unknown as { message: string })?.message
+            };
+        }
+    }, [dataProvider, environmentIdentifier, environmentType, productId, publicKeys, publisherId]);
+
+    const initLicenseValidation = React.useCallback(async () => {
+        const result = await runValidation();
+        licenseDispatch({ type: "setLicense", payload: result });
+
+        updateResultIfDefined(result, onLicenseValidated);
+    }, [licenseDispatch, onLicenseValidated, runValidation]);
+
+    React.useEffect(() => {
+        if (!isDataset(dataProvider) || (!dataProvider.error && !dataProvider.loading && dataProvider.paging.totalResultCount >= 0))
+        {
+            initLicenseValidation();
+        }
+        else if (dataProvider.error)
+        {
+            const result: LicenseValidationResult = {
+                isValid: false,
+                isTerminalError: true,
+                reason: `Dataset error: ${dataProvider.errorMessage}`
+            };
+
+            licenseDispatch({ type: "setLicense", payload: result });
+            updateResultIfDefined(result, onLicenseValidated);
+        }
+    }, [dataProvider, initLicenseValidation, licenseDispatch, onLicenseValidated]);
+
+    return licenseState.license?.isValid
+        ? ( <>
+            { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+            { children }
+        </> )
+        : (
+            <div style={{ display: "flex", width: "100%", height: "100%", flex: "1" }}>
+                { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+                <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1}}>
+                    { licenseState.license?.isValid === false && (
+                        <MessageBar
+                            messageBarType={MessageBarType.error}
+                            isMultiline={true}
+                            styles={{ root: { marginBottom: "10px" }}}
+                            onDismiss={() =>
+                                {
+                                    licenseDispatch({ type: "setLicense", payload: undefined });
+                                    initLicenseValidation();
+                                }
+                            }
+                            actions={
+                                <div>
+                                    { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setLicenseDialogVisible", payload: true })}>Set License</MessageBarButton> }
+                                </div>
+                            }
+                        >
+                            An error occured, please try again. Error information: { licenseState.license?.reason }
+                        </MessageBar>
+                    )}
+                    { !licenseState.license && <Spinner styles={{ root: { width: "auto" }}} label="Loading..." /> }
+                </div>
+            </div>
+        );
+};

@@ -1,0 +1,21 @@
+{
+    "name": "ianua-dev",
+    "build": {
+      "dockerfile": "Dockerfile"
+    },
+    "settings": {
+      "terminal.integrated.defaultProfile.linux": "bash"
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-dotnettools.csharp",
+          "dbaeumer.vscode-eslint",
+          "esbenp.prettier-vscode",
+          "ms-dotnettools.csdevkit"
+        ]
+      }
+    },
+    "forwardPorts": [5000, 5001, 4280],
+    "remoteUser": "vscode"
+}

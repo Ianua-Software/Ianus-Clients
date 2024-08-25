@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ianua.Ianus.Dataverse.Client", "ianus-client\Ianua.Ianus.Dataverse.Client.csproj", "{9C93BD44-9B82-4994-AA00-56F6BFAF6241}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ianua.Ianus.Dataverse.Client.Light", "ianus-client-light\Ianua.Ianus.Dataverse.Client.Light.csproj", "{A3DCF4C9-6AF2-4810-A520-46C2EE683FA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ianua.Ianus.Dataverse.Plugins", "ianus-plugins\Ianua.Ianus.Dataverse.Plugins.csproj", "{82DBDDC3-CB74-4819-90DF-DB6A719D2CBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9C93BD44-9B82-4994-AA00-56F6BFAF6241}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C93BD44-9B82-4994-AA00-56F6BFAF6241}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C93BD44-9B82-4994-AA00-56F6BFAF6241}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C93BD44-9B82-4994-AA00-56F6BFAF6241}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3DCF4C9-6AF2-4810-A520-46C2EE683FA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3DCF4C9-6AF2-4810-A520-46C2EE683FA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3DCF4C9-6AF2-4810-A520-46C2EE683FA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3DCF4C9-6AF2-4810-A520-46C2EE683FA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82DBDDC3-CB74-4819-90DF-DB6A719D2CBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82DBDDC3-CB74-4819-90DF-DB6A719D2CBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82DBDDC3-CB74-4819-90DF-DB6A719D2CBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82DBDDC3-CB74-4819-90DF-DB6A719D2CBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
