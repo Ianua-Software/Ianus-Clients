@@ -12,7 +12,7 @@ const str2ab = (str: string) => {
  
 const importRsaKey = (pem: string) => {
     // base64 decode the string to get the binary data
-    const binaryDerString = window.atob(pem);
+    const binaryDerString = window.atob(pem.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----","").trim());
     // convert from a binary string to an ArrayBuffer
     const binaryDer = str2ab(binaryDerString);
   
@@ -37,33 +37,35 @@ const arrayBufferFromString = (str: string) => {
     return buf;
 };
 
-const validateLicense = (license: ILicense): [boolean, string] => {
+const validateLicense = (validIssuer: string, validAudience: string, dataverseOrganizationUniqueName: string, license: ILicense): [boolean, string] => {
     if (!license) {
         return [false, "No license passed!"];
     }
 
-    if (!license.sub || !license.aud || !license.iss || !license.exp) {
+    if (!license.env || !license.env.length || !license.aud || !license.iss || !license.exp) {
         return [false, "Incomplete license!"];
     }
 
-    if (license.iss !== "XRM-OSS") {
-        return [false, "Invalid license issuer"];
+    if (license.iss !== validIssuer) {
+        return [false, `Invalid license issuer: License must be issued by '${validIssuer}'`];
     }
 
-    if (license.aud !== "XRM-OSS-AITUNE") {
-        return [false, "This license is not scoped to AI Tune!"];
+    if (license.aud !== validAudience) {
+        return [false, `Invalid license audience: License audience must be '${validAudience}'`];
     }
 
     if (isNaN(license.exp)) {
-        return [false, "License expiry is invalid!"];
+        return [false, "Invalid license expiry: License expiry is not a number"];
     }
 
-    if (new Date(license.exp * 1000) < new Date()) {
-        return [false, "Your license has expired"];
+    const expiryDate = new Date(license.exp * 1000);
+    if (expiryDate < new Date()) {
+        return [false, `Invalid license expiry: Your license has expired on '${expiryDate}'`];
     }
 
-    if (license.sub !== window.location.hostname) {
-        return [false, `This license is not intended for usage in ${window.location.hostname} but for ${license.sub}. You need a matching license!`];
+    const host = window.location.hostname.toLowerCase();
+    if (!license.env.includes(host) && !license.env.includes(dataverseOrganizationUniqueName)) {
+        return [false, `Invalid environment: Your license is not intended for usage in '${host}' / '${dataverseOrganizationUniqueName}' but for '${JSON.stringify(license.env)}'`];
     }
 
     return [true, ""];
@@ -79,7 +81,7 @@ const base64url_decode = (value: string): ArrayBuffer => {
     ), c => c.charCodeAt(0)).buffer
 };
 
-export const checkLicense = async (publicKey: string, licenseKey: string | undefined): Promise<[string, ILicense?]> => {
+export const checkLicense = async (validIssuer: string, validAudience: string, dataverseOrganizationUniqueName: string, publicKey: string, licenseKey: string | undefined): Promise<[string, ILicense?]> => {
     if (!licenseKey) {
         return ["No license key passed!"];
     }
@@ -97,7 +99,7 @@ export const checkLicense = async (publicKey: string, licenseKey: string | undef
         const plainClaims = window.atob(encodedClaims);
         const claimsJson = JSON.parse(plainClaims);
 
-        const [contentValidationResult, contentValidationResultMessage] = validateLicense(claimsJson);
+        const [contentValidationResult, contentValidationResultMessage] = validateLicense(validIssuer, validAudience, dataverseOrganizationUniqueName, claimsJson);
 
         if (!contentValidationResult) {
             return [contentValidationResultMessage];
@@ -110,7 +112,7 @@ export const checkLicense = async (publicKey: string, licenseKey: string | undef
             new TextEncoder().encode(encodedHeaders + "." + encodedClaims)
         );
 
-        return [isLicenseSignatureValid ? "" : "License signature verification failed!", isLicenseSignatureValid ? claimsJson : undefined];
+        return [isLicenseSignatureValid ? "" : "Invalid license signature: Verification failed!", isLicenseSignatureValid ? claimsJson : undefined];
     }
     catch {
         return ["Oops, something went wrong while validating your license"];

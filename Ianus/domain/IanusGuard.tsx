@@ -10,9 +10,10 @@ export interface IIanusGuardProps {
     pcfContext: ComponentFramework.Context<IInputs>;
     productNameBase64: string;
     publicKeyBase64: string;
+    validIssuer: string;
 }
 
-export const IanusGuard: React.FC<IIanusGuardProps> = ({ pcfContext, productNameBase64, publicKeyBase64, children }) => {
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ pcfContext, productNameBase64, publicKeyBase64, validIssuer, children }) => {
     const [secureConfig, setSecureConfig] = React.useState<SecureConfig | undefined>(undefined);
     const [dialog, setDialog] = React.useState<React.ReactNode>();
     const [error, setError] = React.useState("");
@@ -55,7 +56,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ pcfContext, productName
 
             const license = licenses.entities[0];
 
-            const [errorMessage, licenseClaims] = await checkLicense(publicKey, license.ian_key);
+            const [errorMessage, licenseClaims] = await checkLicense(validIssuer, productName, (pcfContext as unknown as { orgSettings: { uniqueName: string }}).orgSettings.uniqueName, publicKey, license.ian_key);
 
             const generatedSecureConfig = {
                 configId: license.ian_licenseid,
