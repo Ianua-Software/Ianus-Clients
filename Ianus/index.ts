@@ -1,10 +1,11 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
-import { HelloWorld, IHelloWorldProps } from "./HelloWorld";
+import { IanusDemo, IIanusDemoProps } from "./IanusDemo";
 import * as React from "react";
 
 export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs> {
     private theComponent: ComponentFramework.ReactControl<IInputs, IOutputs>;
     private notifyOutputChanged: () => void;
+    private isLicenseValid = 0;
 
     /**
      * Empty constructor.
@@ -32,9 +33,16 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
      * @returns ReactElement root react element for the control
      */
     public updateView(context: ComponentFramework.Context<IInputs>): React.ReactElement {
-        const props: IHelloWorldProps = { name: 'Hello, World!', pcfContext: context };
+        const props: IIanusDemoProps = {
+            productName: btoa(context.parameters.productName.raw ?? ""),
+            publicKey: btoa(context.parameters.publicKey.raw ?? ""),
+            validIssuer: context.parameters.validIssuer.raw ?? "",
+            orgUniqueName: (context as unknown as { orgSettings: { uniqueName: string }}).orgSettings.uniqueName,
+            webAPI: context.webAPI
+        };
+
         return React.createElement(
-            HelloWorld, props
+            IanusDemo, props
         );
     }
 
@@ -43,7 +51,9 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
      * @returns an object based on nomenclature defined in manifest, expecting object[s] for property marked as "bound" or "output"
      */
     public getOutputs(): IOutputs {
-        return { };
+        return {
+            isLicenseValid: this.isLicenseValid
+        };
     }
 
     /**

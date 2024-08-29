@@ -1,6 +1,6 @@
-import { SecureConfig } from "./SecureConfig";
+import { LicenseData } from "./LicenseData";
 
-export const retrievePluginTypeResponse = (cfg: SecureConfig) => ({
+export const retrievePluginTypeResponse = (cfg: LicenseData) => ({
   "value": [
     {
       "@odata.etag": "W/\"2492812\"",

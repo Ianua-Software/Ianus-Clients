@@ -1,80 +1,77 @@
-import { MessageBar, MessageBarType, Spinner } from '@fluentui/react';
+import { MessageBar, MessageBarButton, MessageBarType, Spinner } from '@fluentui/react';
 import * as React from 'react';
-import { SecureConfig } from './SecureConfig';
+import { LicenseData } from './LicenseData';
 import { IInputs } from '../generated/ManifestTypes';
-import { SettingsDialog } from './SettingsDialog';
+import { LicenseDialog } from './LicenseDialog';
 import { checkLicense } from './LicenseValidation';
 import { ILicense } from './License';
+import { useLicenseContext } from './IanusLicenseStateProvider';
 
 export interface IIanusGuardProps {
-    pcfContext: ComponentFramework.Context<IInputs>;
     productNameBase64: string;
     publicKeyBase64: string;
     validIssuer: string;
+    orgUniqueName: string;
+    webAPI: ComponentFramework.WebApi;
 }
 
-export const IanusGuard: React.FC<IIanusGuardProps> = ({ pcfContext, productNameBase64, publicKeyBase64, validIssuer, children }) => {
-    const [secureConfig, setSecureConfig] = React.useState<SecureConfig | undefined>(undefined);
-    const [dialog, setDialog] = React.useState<React.ReactNode>();
-    const [error, setError] = React.useState("");
-    
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ productNameBase64, publicKeyBase64, validIssuer, orgUniqueName, webAPI, children }) => {
+    const [ licenseState, licenseDispatch ] = useLicenseContext();
+
     const productName = React.useMemo(() => atob(productNameBase64), []);
     const publicKey = React.useMemo(() => atob(publicKeyBase64), []);
 
     const onSettingsFinally = () => {
-        setDialog(undefined);
+        licenseDispatch({ type: "setLicenseDialogVisible", payload: false });
         init();
-    };
-
-    const showSettingsDialog = (cfg: SecureConfig, licenseError?: string) => {
-        setDialog(<SettingsDialog secureConfig={cfg} pcfContext={pcfContext} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} licenseError={licenseError} />);
     };
 
     const init = async () => {
         try {
             if (!productName) {
-                setError("No product name found, pass a product name as prop!");
+                licenseDispatch({ type: "setLicenseError", payload: "No product name found, pass a product name as prop!" });
                 return;
             }
 
             if (!publicKey) {
-                setError("No public key found, pass a valid public key as prop!");
+                licenseDispatch({ type: "setLicenseError", payload: "No public key found, pass a valid public key as prop!" });
                 return;
             }
 
-            const licenses = await pcfContext.webAPI.retrieveMultipleRecords("ian_license", `?$filter=ian_name eq '${productName}' and statecode eq 0`);
+            const licenses = await webAPI.retrieveMultipleRecords("ian_license", `?$filter=ian_name eq '${productName}' and statecode eq 0`);
 
             if (!licenses.entities.length) {
-                setError("No license found!");
+                licenseDispatch({ type: "setLicenseError", payload: "No license found!" });
                 return;
             }
 
             if (licenses.entities.length > 1) {
-                setError(`Multiple active licenses for '${productName}' found, please make sure there is only one active license`);
+                licenseDispatch({ type: "setLicenseError", payload: `Multiple active licenses for '${productName}' found, please make sure there is only one active license` });
                 return;
             }
 
             const license = licenses.entities[0];
 
-            const [errorMessage, licenseClaims] = await checkLicense(validIssuer, productName, (pcfContext as unknown as { orgSettings: { uniqueName: string }}).orgSettings.uniqueName, publicKey, license.ian_key);
-
-            const generatedSecureConfig = {
-                configId: license.ian_licenseid,
-                licenseKey: license.ian_key,
-                licenseClaims: licenseClaims
-            };
+            const [errorMessage, licenseClaims] = await checkLicense(validIssuer, productName, orgUniqueName, publicKey, license.ian_key);
 
             if (errorMessage || !licenseClaims) {
-                showSettingsDialog(generatedSecureConfig, errorMessage);
+                licenseDispatch({ type: "setLicenseError", payload: errorMessage || "No license claims found!" });
             }
             else
             {
-                setSecureConfig(generatedSecureConfig);
+                const licenseData: LicenseData = {
+                    licenseId: license.ian_licenseid,
+                    licenseKey: license.ian_key,
+                    licenseClaims: licenseClaims
+                };
+
+                licenseDispatch({ type: "setLicense", payload: licenseData });
+                licenseDispatch({ type: "setLicenseError", payload: "" });
             }
         }
         catch (e) {
             if (e && e instanceof Error) {
-                setError(e?.message ?? e);
+                licenseDispatch({ type: "setLicenseError", payload: e?.message ?? e });
             }
         }
     };
@@ -83,23 +80,31 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ pcfContext, productName
         init();
     }, []);
 
-    return secureConfig
-        ? ( <> { children } </> )
+    return licenseState.license
+        ? ( <>
+            { licenseState.licenseDialogVisible && <LicenseDialog productName={productName} webAPI={webAPI} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+            { children }</> 
+        )
         : (
-            <div style={{ width: pcfContext.mode.allocatedWidth > 0 ? pcfContext.mode.allocatedWidth : undefined, height: pcfContext.mode.allocatedHeight > 0 ? pcfContext.mode.allocatedHeight : undefined }}>
-                { dialog }
+            <div style={{ display: "flex", width: "100%", height: "100%" }}>
+                { licenseState.licenseDialogVisible && <LicenseDialog productName={productName} webAPI={webAPI} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"}}>
-                    { !!error &&
+                    { !!licenseState.licenseError &&
                         <MessageBar
                             messageBarType={MessageBarType.error}
                             isMultiline={true}
                             styles={{ root: { marginBottom: "10px" }}}
-                            onDismiss={() => setError("")}
+                            onDismiss={() => licenseDispatch({ type: "setLicenseError", payload: "" })}
+                            actions={
+                                <div>
+                                    <MessageBarButton onClick={() => licenseDispatch({ type: "setLicenseDialogVisible", payload: true })}>Set License</MessageBarButton>
+                                </div>
+                            }
                         >
-                            An error occured, please try again. Error information: { error }
+                            An error occured, please try again. Error information: { licenseState.licenseError }
                         </MessageBar>
                     }
-                    { !secureConfig && !error && <Spinner styles={{ root: { width: "auto" }}} label="Loading..." /> }
+                    { !licenseState.license && !licenseState.licenseError && <Spinner styles={{ root: { width: "auto" }}} label="Loading..." /> }
                 </div>
             </div>
         );

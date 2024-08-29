@@ -1,13 +1,16 @@
 import * as React from 'react';
 import { IInputs } from '../generated/ManifestTypes';
 import { IanusGuard, IIanusGuardProps } from './IanusGuard';
+import { IanusLicenseStateProvider } from './IanusLicenseStateProvider';
 
 export interface IIanusProviderProps extends IIanusGuardProps {
-    pcfContext: ComponentFramework.Context<IInputs>;
+    webAPI: ComponentFramework.WebApi;
 }
 
 export const IanusProvider: React.FC<React.PropsWithChildren<IIanusProviderProps>> = (props) => {
     return (
-        <IanusGuard {...props} />
+        <IanusLicenseStateProvider>
+            <IanusGuard {...props} />
+        </IanusLicenseStateProvider>
     );
 };
