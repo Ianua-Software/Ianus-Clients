@@ -1,9 +1,9 @@
 import { ChoiceGroup, DefaultButton, Dialog, DialogFooter, DialogType, Dropdown, IChoiceGroupOption, IDropdownOption, MessageBar, MessageBarType, PrimaryButton, Text, TextField } from '@fluentui/react';
 import * as React from 'react';
 import { ILicense } from './License';
-import { IInputs } from '../generated/ManifestTypes';
 import { LicenseData } from './LicenseData';
 import { useLicenseContext } from './IanusLicenseStateProvider';
+import { acquireLicenses, isDataset, isWebApi } from './IanusGuard';
 
 const modalProps = {
     isBlocking: false,
@@ -17,12 +17,12 @@ const dialogContentProps = {
 
 export interface ILicenseDialogProps {
     productName: string;
-    webAPI: ComponentFramework.WebApi;
+    dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
     onSubmit: () => void;
     onCancel: () => void;
 }
 
-export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ productName, webAPI, onCancel, onSubmit }) => {
+export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ productName, dataProvider, onCancel, onSubmit }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
     
     const [ submitBlocked, setSubmitBlocked ] = React.useState(true);
@@ -33,11 +33,11 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ productName, webA
         (async() => {
             if (!licenseId)
             {
-                const licenses = await webAPI.retrieveMultipleRecords("ian_license", `?$filter=ian_name eq '${productName}' and statecode eq 0`);
+                const licenses = await acquireLicenses(productName, dataProvider);
 
-                if (licenses.entities.length > 0)
+                if (licenses.length > 0)
                 {
-                    setLicenseId(licenses.entities[0].ian_licenseid);
+                    setLicenseId(licenses[0].ian_licenseid);
                 }
             }
         })();
@@ -45,22 +45,40 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ productName, webA
 
     const onSubmitClick = async () => {
         if (licenseId) {
-            await webAPI.updateRecord(
-                "ian_license",
-                licenseId,
-                {
-                    "ian_key": licenseKeyInput
-                }
-            );
+            if (isWebApi(dataProvider)) {
+                await dataProvider.updateRecord(
+                    "ian_license",
+                    licenseId,
+                    {
+                        "ian_key": licenseKeyInput
+                    }
+                );
+            }
+            else if (isDataset(dataProvider)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                await (dataProvider.records[licenseId] as any).setValue("ian_key", licenseKeyInput);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                await (dataProvider.records[licenseId] as any).save();
+            }
         }
         else {
-            await webAPI.createRecord(
-                "ian_license",
-                {
-                    "ian_name": productName,
-                    "ian_key": licenseKeyInput
-                }
-            );
+            if (isWebApi(dataProvider)) {
+                await dataProvider.createRecord(
+                    "ian_license",
+                    {
+                        "ian_name": productName,
+                        "ian_key": licenseKeyInput
+                    }
+                );
+            }
+            else if (isDataset(dataProvider)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const newLicense = (dataProvider as any).newRecord();
+
+                await newLicense.setValue("ian_name", productName);
+                await newLicense.setValue("ian_key", licenseKeyInput);
+                await newLicense.save();
+            }
         }
 
         onSubmit();

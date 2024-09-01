@@ -1,3 +1,4 @@
+import { isDataset } from "./IanusGuard";
 import { ILicense } from "./License";
 
 // from https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
@@ -81,7 +82,23 @@ const base64url_decode = (value: string): ArrayBuffer => {
     ), c => c.charCodeAt(0)).buffer
 };
 
-export const checkLicense = async (validIssuer: string, validAudience: string, dataverseOrganizationUniqueName: string, publicKey: string, licenseKey: string | undefined): Promise<[string, ILicense?]> => {
+const extractUniqueNameFromDataset = (dataset: ComponentFramework.PropertyTypes.DataSet) => {
+    const records = Object.values(dataset.records);
+
+    if (records.length) {
+        const record = records[0];
+
+        if (record.getNamedReference().etn !== "ian_environmentinformation") {
+            throw new Error("You need to pass the Environment Information (ian_environmentinformation) as data source for environment info")
+        }
+
+        return record.getValue("ian_uniquename") as string;
+    }
+
+    return "";
+};
+
+export const checkLicense = async (validIssuer: string, validAudience: string, environmentInfo: string | ComponentFramework.PropertyTypes.DataSet, publicKey: string, licenseKey: string | undefined): Promise<[string, ILicense?]> => {
     if (!licenseKey) {
         return ["No license key passed!"];
     }
@@ -98,6 +115,10 @@ export const checkLicense = async (validIssuer: string, validAudience: string, d
 
         const plainClaims = window.atob(encodedClaims);
         const claimsJson = JSON.parse(plainClaims);
+
+        const dataverseOrganizationUniqueName = isDataset(environmentInfo)
+            ? extractUniqueNameFromDataset(environmentInfo)
+            : environmentInfo as string;
 
         const [contentValidationResult, contentValidationResultMessage] = validateLicense(validIssuer, validAudience, dataverseOrganizationUniqueName, claimsJson);
 

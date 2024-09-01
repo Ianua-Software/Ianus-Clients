@@ -2,7 +2,7 @@ import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { IanusDemo, IIanusDemoProps } from "./IanusDemo";
 import * as React from "react";
 
-export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs> {
+export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IOutputs> {
     private theComponent: ComponentFramework.ReactControl<IInputs, IOutputs>;
     private notifyOutputChanged: () => void;
     private isLicenseValid = 0;
@@ -37,8 +37,8 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
             productName: btoa(context.parameters.productName.raw ?? ""),
             publicKey: btoa(context.parameters.publicKey.raw ?? ""),
             validIssuer: context.parameters.validIssuer.raw ?? "",
-            orgUniqueName: (context as unknown as { orgSettings: { uniqueName: string }}).orgSettings.uniqueName,
-            webAPI: context.webAPI
+            environmentInfo: context.parameters.environmentInformationDataSet,
+            dataProvider: context.parameters.licenseDataSet
         };
 
         return React.createElement(

@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { DefaultButton, Label } from '@fluentui/react';
-import { IanusProvider } from "./domain/IanusProvider";
+import { IanusProvider } from "../../../ianus/IanusProvider";
 import { IInputs } from './generated/ManifestTypes';
-import { useLicenseContext } from './domain/IanusLicenseStateProvider';
+import { useLicenseContext } from '../../../ianus/IanusLicenseStateProvider';
 
 export interface IIanusDemoProps {
   productName: string;
   publicKey: string;
   validIssuer: string;
-  orgUniqueName: string;
-  webAPI: ComponentFramework.WebApi;
+  environmentInfo: string;
+  dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
 }
 
 const IanusDemoApp: React.FC = () => {
@@ -26,14 +26,14 @@ const IanusDemoApp: React.FC = () => {
 }
 
 
-export const IanusDemo: React.FC<IIanusDemoProps> = ({ productName, publicKey, validIssuer, orgUniqueName, webAPI }) => {
+export const IanusDemo: React.FC<IIanusDemoProps> = ({ productName, publicKey, validIssuer, environmentInfo, dataProvider }) => {
   return (
     <IanusProvider
       productNameBase64={productName}
       publicKeyBase64={publicKey}
       validIssuer={validIssuer}
-      orgUniqueName={orgUniqueName}
-      webAPI={webAPI}
+      environmentInfo={environmentInfo}
+      dataProvider={dataProvider}
     >
       <IanusDemoApp />
     </IanusProvider>
