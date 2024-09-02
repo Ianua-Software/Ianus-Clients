@@ -5,6 +5,7 @@ import { LicenseDialog } from './LicenseDialog';
 import { checkLicense } from './LicenseValidation';
 import { ILicense } from './License';
 import { useLicenseContext } from './IanusLicenseStateProvider';
+import { LicenseValidationResult } from './LicenseValidationResult';
 
 export interface IIanusGuardProps {
     productNameBase64: string;
@@ -12,6 +13,7 @@ export interface IIanusGuardProps {
     validIssuer: string;
     environmentInfo: string | ComponentFramework.PropertyTypes.DataSet;
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
+    onLicenseValidated?: (result: LicenseValidationResult) => any;
 }
 
 export const isWebApi = (dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet | string): dataProvider is ComponentFramework.WebApi => {
@@ -37,7 +39,21 @@ export const acquireLicenses = async (productName: string, dataProvider: Compone
     }
 };
 
-export const IanusGuard: React.FC<IIanusGuardProps> = ({ productNameBase64, publicKeyBase64, validIssuer, environmentInfo, dataProvider, children }) => {
+const updateResultIfDefined = ( result: LicenseValidationResult, onLicenseValidated: ( ( result: LicenseValidationResult ) => any ) | undefined ) => {
+    if (onLicenseValidated) {
+        try
+        {
+            onLicenseValidated(result);
+        }
+        catch( e ) {
+            if (e && e instanceof Error) {
+                console.error(`Error while calling onLicenseValidated: '${e.message}'`);
+            }
+        }
+    }
+};
+
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ productNameBase64, publicKeyBase64, validIssuer, environmentInfo, dataProvider, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
     const productName = React.useMemo(() => atob(productNameBase64), []);
@@ -45,31 +61,31 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ productNameBase64, publ
 
     const onSettingsFinally = () => {
         licenseDispatch({ type: "setLicenseDialogVisible", payload: false });
-        init();
+        initLicenseValidation();
     };
 
-    const init = async () => {
+    const validateLicense = async (): Promise<boolean> => {
         try {
             if (!productName) {
                 licenseDispatch({ type: "setLicenseError", payload: "No product name found, pass a product name as prop!" });
-                return;
+                return false;
             }
 
             if (!publicKey) {
                 licenseDispatch({ type: "setLicenseError", payload: "No public key found, pass a valid public key as prop!" });
-                return;
+                return false;
             }
 
             const licenses = await acquireLicenses(productName, dataProvider);
 
             if (!licenses.length) {
                 licenseDispatch({ type: "setLicenseError", payload: "No license found!" });
-                return;
+                return false;
             }
 
             if (licenses.length > 1) {
                 licenseDispatch({ type: "setLicenseError", payload: `Multiple active licenses for '${productName}' found, please make sure there is only one active license` });
-                return;
+                return false;
             }
 
             const license = licenses[0];
@@ -78,6 +94,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ productNameBase64, publ
 
             if (errorMessage || !licenseClaims) {
                 licenseDispatch({ type: "setLicenseError", payload: errorMessage || "No license claims found!" });
+                return false;
             }
             else
             {
@@ -89,24 +106,36 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ productNameBase64, publ
 
                 licenseDispatch({ type: "setLicense", payload: licenseData });
                 licenseDispatch({ type: "setLicenseError", payload: "" });
+                return true;
             }
         }
         catch (e) {
             if (e && e instanceof Error) {
                 licenseDispatch({ type: "setLicenseError", payload: e?.message ?? e });
             }
+
+            return false;
         }
     };
 
+    const initLicenseValidation = async () => {
+        const result = await validateLicense();
+
+        updateResultIfDefined({ isValid: result }, onLicenseValidated);
+    };
+
     React.useEffect(() => {
-        init();
-    }, [ isDataset(dataProvider) ? dataProvider.loading : dataProvider ]);
+        initLicenseValidation();
+    }, [
+        isDataset(dataProvider) ? dataProvider.sortedRecordIds.length : dataProvider,
+        isDataset(environmentInfo) ? environmentInfo.sortedRecordIds.length : environmentInfo
+    ]);
 
     return licenseState.license
         ? ( <>
             { licenseState.licenseDialogVisible && <LicenseDialog productName={productName} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
-            { children }</> 
-        )
+            { children }
+        </> )
         : (
             <div style={{ display: "flex", width: "100%", height: "100%" }}>
                 { licenseState.licenseDialogVisible && <LicenseDialog productName={productName} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }

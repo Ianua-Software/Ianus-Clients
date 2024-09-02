@@ -1,3 +1,4 @@
+import { LicenseValidationResult } from "../../../ianus/LicenseValidationResult";
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { IanusDemo, IIanusDemoProps } from "./IanusDemo";
 import * as React from "react";
@@ -27,6 +28,11 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
         this.notifyOutputChanged = notifyOutputChanged;
     }
 
+    private onLicenseValidated = ( result: LicenseValidationResult ): void => {
+        this.isLicenseValid = result.isValid ? 1 : 0;
+        this.notifyOutputChanged();
+    };
+
     /**
      * Called when any value in the property bag has changed. This includes field values, data-sets, global values such as container height and width, offline status, control metadata values such as label, visible, etc.
      * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
@@ -38,7 +44,8 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
             publicKey: btoa(context.parameters.publicKey.raw ?? ""),
             validIssuer: context.parameters.validIssuer.raw ?? "",
             environmentInfo: context.parameters.environmentInformationDataSet,
-            dataProvider: context.parameters.licenseDataSet
+            dataProvider: context.parameters.licenseDataSet,
+            onLicenseValidated: this.onLicenseValidated
         };
 
         return React.createElement(

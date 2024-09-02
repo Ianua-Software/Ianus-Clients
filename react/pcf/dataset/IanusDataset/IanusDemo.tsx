@@ -9,6 +9,8 @@ export interface IIanusDemoProps {
   validIssuer: string;
   environmentInfo: string | ComponentFramework.PropertyTypes.DataSet;
   dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onLicenseValidated?: (result: { isValid: boolean; }) => any
 }
 
 const IanusDemoApp: React.FC = () => {
@@ -25,7 +27,7 @@ const IanusDemoApp: React.FC = () => {
 }
 
 
-export const IanusDemo: React.FC<IIanusDemoProps> = ({ productName, publicKey, validIssuer, environmentInfo, dataProvider }) => {
+export const IanusDemo: React.FC<IIanusDemoProps> = ({ productName, publicKey, validIssuer, environmentInfo, dataProvider, onLicenseValidated }) => {
   return (
     <IanusProvider
       productNameBase64={productName}
@@ -33,6 +35,7 @@ export const IanusDemo: React.FC<IIanusDemoProps> = ({ productName, publicKey, v
       validIssuer={validIssuer}
       environmentInfo={environmentInfo}
       dataProvider={dataProvider}
+      onLicenseValidated={onLicenseValidated}
     >
       <IanusDemoApp />
     </IanusProvider>
