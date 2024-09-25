@@ -125,7 +125,13 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ productNameBase64, publ
     };
 
     React.useEffect(() => {
-        initLicenseValidation();
+        if (
+            (!isDataset(dataProvider) || (!dataProvider.error && !dataProvider.loading))
+            && (!isDataset(environmentInfo) || (!environmentInfo.error && !environmentInfo.loading))
+        )
+        {
+            initLicenseValidation();
+        }
     }, [
         isDataset(dataProvider) ? dataProvider.sortedRecordIds.length : dataProvider,
         isDataset(environmentInfo) ? environmentInfo.sortedRecordIds.length : environmentInfo
@@ -137,9 +143,9 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ productNameBase64, publ
             { children }
         </> )
         : (
-            <div style={{ display: "flex", width: "100%", height: "100%" }}>
+            <div style={{ display: "flex", width: "100%", height: "100%", flex: "1" }}>
                 { licenseState.licenseDialogVisible && <LicenseDialog productName={productName} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
-                <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"}}>
+                <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1}}>
                     { !!licenseState.licenseError &&
                         <MessageBar
                             messageBarType={MessageBarType.error}

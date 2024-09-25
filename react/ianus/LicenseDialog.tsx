@@ -73,7 +73,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ productName, data
             }
             else if (isDataset(dataProvider)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const newLicense = (dataProvider as any).newRecord();
+                const newLicense = await (dataProvider as any).newRecord();
 
                 await newLicense.setValue("ian_name", productName);
                 await newLicense.setValue("ian_key", licenseKeyInput);
