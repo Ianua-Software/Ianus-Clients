@@ -40,9 +40,9 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
      */
     public updateView(context: ComponentFramework.Context<IInputs>): React.ReactElement {
         const props: IIanusDemoProps = {
-            productName: btoa(context.parameters.productName.raw ?? ""),
+            productName: btoa(context.parameters.product.raw ?? ""),
             publicKey: btoa(context.parameters.publicKey.raw ?? ""),
-            validIssuer: context.parameters.validIssuer.raw ?? "",
+            validIssuer: context.parameters.issuer.raw ?? "",
             environmentInfo: context.parameters.environmentInformationDataSet,
             dataProvider: context.parameters.licenseDataSet,
             onLicenseValidated: this.onLicenseValidated

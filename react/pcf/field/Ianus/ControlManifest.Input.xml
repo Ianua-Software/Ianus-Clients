@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="Ianua" constructor="Ianus" version="0.0.1" display-name-key="Ianus" description-key="Ianus description" control-type="virtual" >
+  <control namespace="Ianua" constructor="Ianus" version="0.0.3" display-name-key="Ianus" description-key="Ianus description" control-type="virtual" >
     <!--external-service-usage node declares whether this 3rd party PCF control is using external service or not, if yes, this control will be considered as premium and please also add the external domain it is using.
     If it is not using any external service, please set the enabled="false" and DO NOT add any domain below. The "enabled" will be false by default.
     Example1:
@@ -20,9 +20,9 @@
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
     <property name="sampleProperty" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type="SingleLine.Text" usage="bound" required="true" />
     
-    <property name="validIssuer" display-name-key="Valid Issuer" description-key="Set the issuer using which you want to publish your component. Currently this is the ID of your Ianus organizaiton" of-type="SingleLine.Text" usage="input" required="true" />
+    <property name="issuer" display-name-key="Issuer Id" description-key="Set the issuer using which you want to publish your component. This is the ID of your Ianus organization. Copy it from Ianus portal on your organization record." of-type="SingleLine.Text" usage="input" required="true" />
     <property name="publicKey" display-name-key="Public Key" description-key="Your product specific public key for verifying the license. You can get this from Ianus portal on your product record" of-type="Multiple" usage="input" required="true" />
-    <property name="productName" display-name-key="Product Name" description-key="Name of the product you want to license. Currently this is the ID of your product inside Ianus portal" of-type="SingleLine.Text" usage="input" required="true" />
+    <property name="product" display-name-key="Product Id" description-key="Id of the product you want to license. Copy it from Ianus portal" of-type="SingleLine.Text" usage="input" required="true" />
 
     <property name="isLicenseValid" display-name-key="Is License Valid" description-key="This returns the result of the license validation. If a valid license was found true, otherwise false" of-type="Whole.None" usage="output" required="false" />
 
