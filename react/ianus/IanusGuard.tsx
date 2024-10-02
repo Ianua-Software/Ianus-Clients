@@ -1,4 +1,6 @@
-import { MessageBar, MessageBarButton, MessageBarType, Spinner } from '@fluentui/react';
+import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
+import { MessageBarButton } from '@fluentui/react/lib/Button';
+import { Spinner } from '@fluentui/react/lib/Spinner';
 import * as React from 'react';
 import { LicenseData } from './LicenseData';
 import { LicenseDialog } from './LicenseDialog';

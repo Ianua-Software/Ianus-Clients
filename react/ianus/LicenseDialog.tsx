@@ -1,7 +1,14 @@
-import { ChoiceGroup, DefaultButton, Dialog, DialogFooter, DialogType, Dropdown, IChoiceGroupOption, IDropdownOption, MessageBar, MessageBarType, PrimaryButton, Text, TextField } from '@fluentui/react';
+import {
+    DefaultButton,
+    Dialog,
+    DialogFooter,
+    DialogType,
+    FontIcon,
+    PrimaryButton,
+    Text,
+    TextField
+} from '@fluentui/react';
 import * as React from 'react';
-import { ILicense } from './License';
-import { LicenseData } from './LicenseData';
 import { useLicenseContext } from './IanusLicenseStateProvider';
 import { acquireLicenses, isDataset, isWebApi } from './IanusGuard';
 
@@ -97,13 +104,13 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ productName, data
                 <br />
                 <h3>License Information</h3>
                 <p>
-                    <span style={{fontWeight: 'bold'}}>License Publisher: </span> <span>{licenseState.license?.licenseClaims.iss}</span>
+                    <span style={{fontWeight: 'bold'}}>License Publisher: </span> <span title={licenseState.license?.licenseClaims.iss}>{licenseState.license?.licenseClaims.iss_name}</span>
                 </p>
                 <p>
-                    <span style={{fontWeight: 'bold'}}>Licensed Product: </span> <span>{licenseState.license?.licenseClaims.aud}</span>
+                    <span style={{fontWeight: 'bold'}}>Licensed Product: </span> <span title={licenseState.license?.licenseClaims.aud}>{licenseState.license?.licenseClaims.aud_name}</span>
                 </p>
                 <p>
-                    <span style={{fontWeight: 'bold'}}>Licensed Customer: </span> <span>{licenseState.license?.licenseClaims.sub}</span>
+                    <span style={{fontWeight: 'bold'}}>Licensed Customer: </span> <span title={licenseState.license?.licenseClaims.sub}>{licenseState.license?.licenseClaims.sub_name}</span>
                 </p>
                 <p>
                     <span style={{fontWeight: 'bold'}}>Licensed Dataverse Environment: </span> <span>{licenseState.license?.licenseClaims.env?.join(", ")}</span>
