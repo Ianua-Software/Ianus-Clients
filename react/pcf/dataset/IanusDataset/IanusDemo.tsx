@@ -4,9 +4,9 @@ import { IanusProvider } from "../../../ianus/IanusProvider";
 import { useLicenseContext } from '../../../ianus/IanusLicenseStateProvider';
 
 export interface IIanusDemoProps {
-  productName: string;
+  product: string;
   publicKey: string;
-  validIssuer: string;
+  issuer: string;
   environmentInfo: string | ComponentFramework.PropertyTypes.DataSet;
   dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,12 +27,12 @@ const IanusDemoApp: React.FC = () => {
 }
 
 
-export const IanusDemo: React.FC<IIanusDemoProps> = ({ productName, publicKey, validIssuer, environmentInfo, dataProvider, onLicenseValidated }) => {
+export const IanusDemo: React.FC<IIanusDemoProps> = ({ product, publicKey, issuer, environmentInfo, dataProvider, onLicenseValidated }) => {
   return (
     <IanusProvider
-      productNameBase64={productName}
-      publicKeyBase64={publicKey}
-      validIssuer={validIssuer}
+      issuerIdentifier={issuer}
+      productIdentifier={product}
+      publicKey={publicKey}
       environmentInfo={environmentInfo}
       dataProvider={dataProvider}
       onLicenseValidated={onLicenseValidated}
