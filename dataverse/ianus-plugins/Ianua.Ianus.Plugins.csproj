@@ -17,7 +17,7 @@
     https://docs.microsoft.com/en-us/nuget/reference/msbuild-targets
   -->
   <PropertyGroup>
-    <PackageId>ianua.ianus.plugins</PackageId>
+    <PackageId>Ianua.Ianus.Plugins</PackageId>
     <Version>$(FileVersion)</Version>
     <Authors>Florian Kroenert</Authors>
     <Company>Ianua Software UG</Company>
@@ -25,10 +25,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BouncyCastle" Version="1.8.9" />
     <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.*" PrivateAssets="All" />
     <PackageReference Include="Microsoft.PowerApps.MSBuild.Plugin" Version="1.*" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="$(PowerAppsTargetsPath)\Microsoft.PowerApps.VisualStudio.Plugin.targets" Condition="Exists('$(PowerAppsTargetsPath)\Microsoft.PowerApps.VisualStudio.Plugin.targets')" />
+
+  <ItemGroup>
+    <Compile Include="../ianus-core/License.cs" />
+    <Compile Include="../ianus-core/LicenseValidation.cs" />
+    <Compile Include="../ianus-core/LicenseValidationResult.cs" />
+  </ItemGroup>
 </Project>

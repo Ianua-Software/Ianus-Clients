@@ -4,8 +4,7 @@ import { Spinner } from '@fluentui/react/lib/Spinner';
 import * as React from 'react';
 import { LicenseData } from './LicenseData';
 import { LicenseDialog } from './LicenseDialog';
-import { checkLicense } from './LicenseValidation';
-import { ILicense } from './License';
+import { checkLicense } from '../../../ianus-core/LicenseValidation';
 import { useLicenseContext } from './IanusLicenseStateProvider';
 import { LicenseValidationResult } from './LicenseValidationResult';
 
@@ -57,6 +56,22 @@ const updateResultIfDefined = ( result: LicenseValidationResult, onLicenseValida
     }
 };
 
+const extractUniqueNameFromDataset = (dataset: ComponentFramework.PropertyTypes.DataSet) => {
+    const records = Object.values(dataset.records);
+
+    if (records.length) {
+        const record = records[0];
+
+        if (record.getNamedReference().etn !== "ian_environmentinformation") {
+            throw new Error("You need to pass the Environment Information (ian_environmentinformation) as data source for environment info")
+        }
+
+        return record.getValue("ian_uniquename") as string;
+    }
+
+    return "";
+};
+
 export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerIdentifier, productIdentifier, publicKey, environmentInfo, dataProvider, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
@@ -91,7 +106,11 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerIdentifier, produ
 
             const license = licenses[0];
 
-            const [errorMessage, licenseClaims] = await checkLicense(issuerIdentifier, productIdentifier, environmentInfo, publicKey, license.ian_key);
+            const dataverseOrganizationUniqueName = isDataset(environmentInfo)
+            ? extractUniqueNameFromDataset(environmentInfo)
+            : environmentInfo as string;
+
+            const [errorMessage, licenseClaims] = await checkLicense(issuerIdentifier, productIdentifier, dataverseOrganizationUniqueName, publicKey, license.ian_key);
 
             if (errorMessage || !licenseClaims) {
                 licenseDispatch({ type: "setLicenseError", payload: errorMessage || "No license claims found!" });

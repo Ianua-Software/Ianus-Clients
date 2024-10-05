@@ -1,4 +1,4 @@
-import { LicenseValidationResult } from "../../../ianus/LicenseValidationResult";
+import { LicenseValidationResult } from "../../../../react-core/fluentui8/LicenseValidationResult";
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { IanusDemo, IIanusDemoProps } from "./IanusDemo";
 import * as React from "react";

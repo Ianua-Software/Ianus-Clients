@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="Ianua" constructor="Ianus" version="0.0.4" display-name-key="Ianus" description-key="Ianus description" control-type="virtual" >
+  <control namespace="Ianua" constructor="IanusDataset" version="0.0.5" display-name-key="IanusDataset" description-key="IanusDataset description" control-type="virtual" >
     <!--external-service-usage node declares whether this 3rd party PCF control is using external service or not, if yes, this control will be considered as premium and please also add the external domain it is using.
     If it is not using any external service, please set the enabled="false" and DO NOT add any domain below. The "enabled" will be false by default.
     Example1:
@@ -17,9 +17,14 @@
       <domain></domain>
       -->
     </external-service-usage>
+
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
-    <property name="sampleProperty" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type="SingleLine.Text" usage="bound" required="true" />
-    
+    <data-set name="licenseDataSet" display-name-key="License Dataset">
+    </data-set>
+
+    <data-set name="environmentInformationDataSet" display-name-key="Environment Information Dataset">
+    </data-set>
+
     <property name="issuer" display-name-key="Issuer Id" description-key="Set the issuer using which you want to publish your component. This is the ID of your Ianus organization. Copy it from Ianus portal on your organization record." of-type="SingleLine.Text" usage="input" required="true" />
     <property name="publicKey" display-name-key="Public Key" description-key="Your product specific public key for verifying the license. You can get this from Ianus portal on your product record" of-type="Multiple" usage="input" required="true" />
     <property name="product" display-name-key="Product Id" description-key="Id of the product you want to license. Copy it from Ianus portal" of-type="SingleLine.Text" usage="input" required="true" />
@@ -43,8 +48,8 @@
       <platform-library name="Fluent" version="8.29.0" />
 
       <!-- UNCOMMENT TO ADD MORE RESOURCES
-      <css path="css/Ianus.css" order="1" />
-      <resx path="strings/Ianus.1033.resx" version="1.0.0" />
+      <css path="css/IanusDataset.css" order="1" />
+      <resx path="strings/IanusDataset.1033.resx" version="1.0.0" />
       -->
     </resources>
     
