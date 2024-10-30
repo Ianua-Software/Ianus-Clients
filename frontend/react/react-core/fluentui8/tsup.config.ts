@@ -1,13 +1,10 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/**/*.{ts,tsx}'],
+  entry: ['src/index.ts'],
   outDir: 'dist',
   dts: true,
   clean: true,
-  splitting: false,
-  minify: false,
-  bundle: true,
   skipNodeModulesBundle: true,
   esbuildOptions(options) {
     options.plugins = [
