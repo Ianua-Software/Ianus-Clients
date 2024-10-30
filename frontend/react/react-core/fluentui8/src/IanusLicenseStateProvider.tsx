@@ -1,4 +1,5 @@
 import * as React from "react";
+
 import { LicenseData } from "./LicenseData";
 
 type Action = { type: "setLicense", payload: LicenseData }

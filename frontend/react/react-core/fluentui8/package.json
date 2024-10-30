@@ -1,16 +1,18 @@
 {
-  "name": "pcf-project",
+  "name": "@ianuasoftware/ianus-react-fluentui8",
   "version": "1.0.0",
   "description": "Project containing your PowerApps Component Framework (PCF) control.",
   "scripts": {
-    "build": "pcf-scripts build",
-    "clean": "pcf-scripts clean",
-    "lint": "pcf-scripts lint",
-    "lint:fix": "pcf-scripts lint fix",
-    "rebuild": "pcf-scripts rebuild",
-    "start": "pcf-scripts start",
-    "start:watch": "pcf-scripts start watch",
-    "refreshTypes": "pcf-scripts refreshTypes"
+    "build": "tsup"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "peerDependencies": {
+    "react": "^16.8 || ^17 || ^18",
+    "react-dom": "^16.8 || ^17 || ^18"
   },
   "dependencies": {
     "@fluentui/react": "8.29.0",

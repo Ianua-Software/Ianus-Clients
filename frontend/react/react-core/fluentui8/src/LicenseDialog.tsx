@@ -1,14 +1,15 @@
+import * as React from 'react';
+
 import {
     DefaultButton,
     Dialog,
     DialogFooter,
     DialogType,
-    FontIcon,
     PrimaryButton,
     Text,
     TextField
 } from '@fluentui/react';
-import * as React from 'react';
+
 import { useLicenseContext } from './IanusLicenseStateProvider';
 import { acquireLicenses, isDataset, isWebApi } from './IanusGuard';
 
