@@ -1,6 +1,6 @@
 {
-  "name": "@ianuasoftware/ianus-react-fluentui8",
-  "version": "1.0.1",
+  "name": "@ianua/ianus-dataverse-react-fluentui8",
+  "version": "1.0.0",
   "description": "Project containing your PowerApps Component Framework (PCF) control.",
   "scripts": {
     "build": "tsup"
