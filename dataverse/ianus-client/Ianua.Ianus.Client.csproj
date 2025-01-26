@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <TargetFramework>net462</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package metadata -->
+    <PackageId>Ianua.Ianus.Client</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Ianua Software UG</Authors>
+    <Company>Ianua Software UG</Company>
+    <Description>.NET client for validating Ianus licenses</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Ianua-Software/Ianus-Clients</RepositoryUrl>
+    <PackageOutputPath>bin\Release</PackageOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle" Version="1.8.9" />
+    <PackageReference Include="Microsoft.CrmSdk.CoreAssemblies" Version="9.0.2.56" />
+  </ItemGroup>
+
+</Project>

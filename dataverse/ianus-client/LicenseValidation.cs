@@ -10,7 +10,7 @@ using Org.BouncyCastle.OpenSsl;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 
-namespace Ianua.Ianus.Domain
+namespace Ianua.Ianus.Client
 {
     public static class LicenseValidation
     {

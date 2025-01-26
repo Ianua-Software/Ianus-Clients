@@ -34,8 +34,8 @@
   <Import Project="$(PowerAppsTargetsPath)\Microsoft.PowerApps.VisualStudio.Plugin.targets" Condition="Exists('$(PowerAppsTargetsPath)\Microsoft.PowerApps.VisualStudio.Plugin.targets')" />
 
   <ItemGroup>
-    <Compile Include="../ianus-core/License.cs" />
-    <Compile Include="../ianus-core/LicenseValidation.cs" />
-    <Compile Include="../ianus-core/LicenseValidationResult.cs" />
+    <Compile Include="../ianus-client/License.cs" />
+    <Compile Include="../ianus-client/LicenseValidation.cs" />
+    <Compile Include="../ianus-client/LicenseValidationResult.cs" />
   </ItemGroup>
 </Project>

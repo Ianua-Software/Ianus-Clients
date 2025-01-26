@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
-using Ianua.Ianus.Domain;
 using System.Text.Json;
+using Ianua.Ianus.Client;
 
 namespace Ianua.Ianus.Plugins
 {

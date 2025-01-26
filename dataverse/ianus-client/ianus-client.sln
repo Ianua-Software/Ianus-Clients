@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ianua.Ianus.Client", "Ianua.Ianus.Client.csproj", "{C5EFF30D-F306-4C47-A474-5118E9D4BAAF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ianua.Ianus.Client.Light", "Ianua.Ianus.Client.Light.csproj", "{02B9CF44-782F-41CC-9D56-3A1DA450FF12}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5EFF30D-F306-4C47-A474-5118E9D4BAAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5EFF30D-F306-4C47-A474-5118E9D4BAAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5EFF30D-F306-4C47-A474-5118E9D4BAAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5EFF30D-F306-4C47-A474-5118E9D4BAAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02B9CF44-782F-41CC-9D56-3A1DA450FF12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02B9CF44-782F-41CC-9D56-3A1DA450FF12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02B9CF44-782F-41CC-9D56-3A1DA450FF12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02B9CF44-782F-41CC-9D56-3A1DA450FF12}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {47612291-EE74-4D86-A690-A80353741680}
+	EndGlobalSection
+EndGlobal

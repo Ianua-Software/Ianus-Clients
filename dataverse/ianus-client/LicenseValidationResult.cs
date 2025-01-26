@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-
-namespace Ianua.Ianus.Domain
+namespace Ianua.Ianus.Client
 {
     public class LicenseValidationResult
     {
