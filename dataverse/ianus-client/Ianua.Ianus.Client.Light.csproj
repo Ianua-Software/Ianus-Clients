@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <PackageId>Ianua.Ianus.Client.Light</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Ianua Software UG</Authors>
     <Company>Ianua Software UG</Company>
     <Description>.NET client for validating Ianus licenses inside non nuget plugins</Description>
@@ -26,11 +26,19 @@
     <Compile Remove="**\*.cs" />
   </ItemGroup>
 
+  <!-- Include files in both modern and legacy locations -->
   <ItemGroup>
-    <Compile Include="IanusValidationRequest.cs" Pack="true" PackagePath="contentFiles/cs/any/" />
-    <Compile Include="License.cs" Pack="true" PackagePath="contentFiles/cs/any/" />
-    <Compile Include="LicenseValidationResult.cs" Pack="true" PackagePath="contentFiles/cs/any/" />
-    <Compile Include="LicenseValidator.cs" Pack="true" PackagePath="contentFiles/cs/any/" />
+    <!-- Files in contentFiles/cs/any/ -->
+    <Content Include="IanusValidationRequest.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
+    <Content Include="License.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
+    <Content Include="LicenseValidation.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
+    <Content Include="LicenseValidator.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
+
+    <!-- Duplicate files under contentFiles/ -->
+    <Content Include="IanusValidationRequest.cs" Pack="true" PackagePath="contentFiles/" BuildAction="Compile" />
+    <Content Include="License.cs" Pack="true" PackagePath="contentFiles/" BuildAction="Compile" />
+    <Content Include="LicenseValidation.cs" Pack="true" PackagePath="contentFiles/" BuildAction="Compile" />
+    <Content Include="LicenseValidator.cs" Pack="true" PackagePath="contentFiles/" BuildAction="Compile" />
   </ItemGroup>
 
 </Project>
