@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>library</OutputType>
-    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net462</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageId>Ianua.Ianus.Client.Light</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Ianua Software UG</Authors>
     <Company>Ianua Software UG</Company>
     <Description>.NET client for validating Ianus licenses inside non nuget plugins</Description>
@@ -15,6 +15,7 @@
     <RepositoryUrl>https://github.com/Ianua-Software/Ianus-Clients</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageOutputPath>bin\Release</PackageOutputPath>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
