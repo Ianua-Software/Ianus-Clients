@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Ianua.Ianus.Client
@@ -10,13 +11,13 @@ namespace Ianua.Ianus.Client
 
         public string sub { get; set; }
 
-        public List<string> env { get; set; }
+        public List<Guid> env { get; set; }
 
         public long iat { get; set; }
 
         public long nbf { get; set; }
 
-        public long exp { get; set; }
+        public long? exp { get; set; }
 
         // Human-readable names for clarity
         public string iss_name { get; set; }

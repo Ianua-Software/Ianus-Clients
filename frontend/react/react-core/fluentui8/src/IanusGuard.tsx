@@ -4,18 +4,18 @@ import { MessageBar, MessageBarType } from '@fluentui/react/lib/MessageBar';
 import { MessageBarButton } from '@fluentui/react/lib/Button';
 import { Spinner } from '@fluentui/react/lib/Spinner';
 
-import { checkLicense } from '@ianus-core/LicenseValidation';
-import { LicenseValidationResult } from '@ianus-core/LicenseValidationResult';
+import { validateLicense } from '../../../../ianus-core/LicenseValidation';
+import { LicenseValidationResult } from '../../../../ianus-core/LicenseValidationResult';
 
 import { LicenseData } from './LicenseData';
 import { LicenseDialog } from './LicenseDialog';
 import { useLicenseContext } from './IanusLicenseStateProvider';
 
 export interface IIanusGuardProps {
-    issuerIdentifier: string;
-    productIdentifier: string;
+    issuerId: string;
+    productId: string;
     publicKey: string;
-    environmentInfo: string | ComponentFramework.PropertyTypes.DataSet;
+    organizationId: string | ComponentFramework.PropertyTypes.DataSet;
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
     onLicenseValidated?: (result: LicenseValidationResult) => unknown;
 }
@@ -59,23 +59,23 @@ const updateResultIfDefined = ( result: LicenseValidationResult, onLicenseValida
     }
 };
 
-const extractUniqueNameFromDataset = (dataset: ComponentFramework.PropertyTypes.DataSet) => {
+const extractOrganizationIdFromDataset = (dataset: ComponentFramework.PropertyTypes.DataSet) => {
     const records = Object.values(dataset.records);
 
     if (records.length) {
         const record = records[0];
 
-        if (record.getNamedReference().etn !== "ian_environmentinformation") {
-            throw new Error("You need to pass the Environment Information (ian_environmentinformation) as data source for environment info")
+        if (record.getNamedReference().etn !== "organization") {
+            throw new Error("You need to pass the 'organization' entity as data source for organizationId when using a dataset as value")
         }
 
-        return record.getValue("ian_uniquename") as string;
+        return record.getValue("organizationid") as string;
     }
 
     return "";
 };
 
-export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerIdentifier, productIdentifier, publicKey, environmentInfo, dataProvider, onLicenseValidated, children }) => {
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerId, productId, publicKey, organizationId, dataProvider, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
     const onSettingsFinally = () => {
@@ -83,91 +83,104 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerIdentifier, produ
         initLicenseValidation();
     };
 
-    const validateLicense = async (): Promise<boolean> => {
+    const runValidation = async (): Promise<LicenseValidationResult> => {
         try {
-            if (!productIdentifier) {
-                licenseDispatch({ type: "setLicenseError", payload: "No product name found, pass a product name as prop!" });
-                return false;
+            if (!productId) {
+                licenseDispatch({ type: "setLicenseError", payload: "No productId found, pass a productId as prop!" });
+                return {
+                    isValid: false,
+                    reason: "No productId found, pass a productId as prop!"
+                };
             }
 
             if (!publicKey) {
                 licenseDispatch({ type: "setLicenseError", payload: "No public key found, pass a valid public key as prop!" });
-                return false;
+                return {
+                    isValid: false,
+                    reason: "No public key found, pass a valid public key as prop!"
+                };
             }
 
-            const licenses = await acquireLicenses(issuerIdentifier, productIdentifier, dataProvider);
+            const licenses = await acquireLicenses(issuerId, productId, dataProvider);
 
             if (!licenses.length) {
                 licenseDispatch({ type: "setLicenseError", payload: "No license found!" });
-                return false;
+                return {
+                    isValid: false,
+                    reason: "No license found!"
+                };
             }
 
             if (licenses.length > 1) {
-                licenseDispatch({ type: "setLicenseError", payload: `Multiple active licenses for '${issuerIdentifier}-${productIdentifier}' found, please make sure there is only one active license` });
-                return false;
+                licenseDispatch({ type: "setLicenseError", payload: `Multiple active licenses for '${issuerId}-${productId}' found, please make sure there is only one active license` });
+                return {
+                    isValid: false,
+                    reason: `Multiple active licenses for '${issuerId}-${productId}' found, please make sure there is only one active license`
+                };
             }
 
-            const license = licenses[0];
+            const licenseRecord = licenses[0];
 
-            const dataverseOrganizationUniqueName = isDataset(environmentInfo)
-            ? extractUniqueNameFromDataset(environmentInfo)
-            : environmentInfo as string;
+            const resolvedOrganizationId = isDataset(organizationId)
+            ? extractOrganizationIdFromDataset(organizationId)
+            : organizationId as string;
 
-            const [errorMessage, licenseClaims] = await checkLicense(issuerIdentifier, productIdentifier, dataverseOrganizationUniqueName, publicKey, license.ian_key);
+            const validationResult = await validateLicense(issuerId, productId, resolvedOrganizationId, publicKey, licenseRecord.ian_key);
 
-            if (errorMessage || !licenseClaims) {
-                licenseDispatch({ type: "setLicenseError", payload: errorMessage || "No license claims found!" });
-                return false;
+            if ( !validationResult.isValid ) {
+                licenseDispatch({ type: "setLicenseError", payload: validationResult.reason || "No license claims found!" });
+                return validationResult;
             }
             else
             {
                 const licenseData: LicenseData = {
-                    licenseId: license.ian_licenseid,
-                    licenseKey: license.ian_key,
-                    licenseClaims: licenseClaims
+                    licenseId: licenseRecord.ian_licenseid,
+                    licenseKey: licenseRecord.ian_key,
+                    licenseClaims: validationResult.license
                 };
 
                 licenseDispatch({ type: "setLicense", payload: licenseData });
                 licenseDispatch({ type: "setLicenseError", payload: "" });
-                return true;
+                return validationResult;
             }
         }
         catch (e) {
-            if (e && e instanceof Error) {
-                licenseDispatch({ type: "setLicenseError", payload: e?.message ?? e });
-            }
+            licenseDispatch({ type: "setLicenseError", payload: (e as unknown as { message: string })?.message ?? e });
 
-            return false;
+            return {
+                isValid: false,
+                reason: (e as unknown as { message: string })?.message
+            };
         }
     };
 
     const initLicenseValidation = async () => {
-        const result = await validateLicense();
+        const result = await runValidation();
 
-        updateResultIfDefined({ isValid: result }, onLicenseValidated);
+        updateResultIfDefined(result, onLicenseValidated);
     };
 
     React.useEffect(() => {
         if (
             (!isDataset(dataProvider) || (!dataProvider.error && !dataProvider.loading))
-            && (!isDataset(environmentInfo) || (!environmentInfo.error && !environmentInfo.loading))
+            && (!isDataset(organizationId) || (!organizationId.error && !organizationId.loading))
         )
         {
             initLicenseValidation();
         }
     }, [
         isDataset(dataProvider) ? dataProvider.sortedRecordIds.length : dataProvider,
-        isDataset(environmentInfo) ? environmentInfo.sortedRecordIds.length : environmentInfo
+        isDataset(organizationId) ? organizationId.sortedRecordIds.length : organizationId
     ]);
 
     return licenseState.license
         ? ( <>
-            { licenseState.licenseDialogVisible && <LicenseDialog issuerIdentifier={issuerIdentifier} productIdentifier={productIdentifier} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+            { licenseState.licenseDialogVisible && <LicenseDialog issuerId={issuerId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
             { children }
         </> )
         : (
             <div style={{ display: "flex", width: "100%", height: "100%", flex: "1" }}>
-                { licenseState.licenseDialogVisible && <LicenseDialog issuerIdentifier={issuerIdentifier} productIdentifier={productIdentifier} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+                { licenseState.licenseDialogVisible && <LicenseDialog issuerId={issuerId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1}}>
                     { !!licenseState.licenseError &&
                         <MessageBar

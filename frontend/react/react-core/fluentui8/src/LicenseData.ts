@@ -1,4 +1,4 @@
-import { ILicense } from "@ianus-core/License";
+import { ILicense } from "../../../../ianus-core/License";
 
 export type LicenseData =
 {

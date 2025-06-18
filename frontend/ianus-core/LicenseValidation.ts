@@ -1,4 +1,5 @@
 import { ILicense } from "./License";
+import { LicenseValidationResult } from "./LicenseValidationResult";
 
 // from https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
 const str2ab = (str: string) => {
@@ -28,12 +29,12 @@ const importRsaKey = (pem: string) => {
     );
 };
 
-const validateLicense = (validIssuer: string, validAudience: string, dataverseOrganizationUniqueName: string, license: ILicense): [boolean, string] => {
+const validateClaims = (validIssuer: string, validAudience: string, organizationId: string, license: ILicense): [boolean, string] => {
     if (!license) {
         return [false, "No license passed!"];
     }
 
-    if (!license.env || !license.env.length || !license.aud || !license.iss || !license.exp) {
+    if (!license.env || !license.env.length || !license.aud || !license.iss) {
         return [false, "Incomplete license!"];
     }
 
@@ -45,18 +46,22 @@ const validateLicense = (validIssuer: string, validAudience: string, dataverseOr
         return [false, `Invalid license audience: License audience must be '${validAudience}'`];
     }
 
-    if (isNaN(license.exp)) {
-        return [false, "Invalid license expiry: License expiry is not a number"];
+    const formattedOrganizationId = organizationId.replace("{", "").replace("}", "").toLowerCase();
+    if (!license.env.includes(formattedOrganizationId)) {
+        return [false, `Invalid organization: Your license is not intended for usage in '${formattedOrganizationId}' but for '${JSON.stringify(license.env)}'`];
     }
 
-    const expiryDate = new Date(license.exp * 1000);
-    if (expiryDate < new Date()) {
-        return [false, `Invalid license expiry: Your license has expired on '${expiryDate}'`];
-    }
+    // Licenses without exp are considered not expiring
+    if (license.exp != null )
+    {
+        if(isNaN(license.exp)) {
+            return [false, "Invalid license expiry: License expiry is not a number"];
+        }
 
-    const host = window.location.hostname.toLowerCase();
-    if (!license.env.includes(host) && !license.env.includes(dataverseOrganizationUniqueName)) {
-        return [false, `Invalid environment: Your license is not intended for usage in '${host}' / '${dataverseOrganizationUniqueName}' but for '${JSON.stringify(license.env)}'`];
+        const expiryDate = new Date(license.exp * 1000);
+        if (expiryDate < new Date()) {
+            return [false, `Invalid license expiry: Your license has expired on '${expiryDate}'`];
+        }
     }
 
     return [true, ""];
@@ -72,9 +77,12 @@ const base64url_decode = (value: string): ArrayBuffer => {
     ), c => c.charCodeAt(0)).buffer
 };
 
-export const checkLicense = async (validIssuer: string, validAudience: string, dataverseOrganizationUniqueName: string, publicKey: string, licenseKey: string | undefined): Promise<[string, ILicense?]> => {
+export const validateLicense = async (validIssuer: string, validAudience: string, organizationId: string, publicKey: string, licenseKey: string | undefined): Promise<LicenseValidationResult> => {
     if (!licenseKey) {
-        return ["No license key passed!"];
+        return {
+            isValid: false,
+            reason: "No license key passed!"
+        };
     }
 
     try {
@@ -82,7 +90,10 @@ export const checkLicense = async (validIssuer: string, validAudience: string, d
         const parts = licenseKey.split('.');
 
         if (parts.length < 3) {
-            return ["Incorrect license!"];
+            return {
+                isValid: false,
+                reason: "Incorrect license!"
+            };
         }
 
         const [encodedHeaders, encodedClaims, signature] = parts;
@@ -90,10 +101,13 @@ export const checkLicense = async (validIssuer: string, validAudience: string, d
         const plainClaims = window.atob(encodedClaims);
         const claimsJson = JSON.parse(plainClaims);
 
-        const [contentValidationResult, contentValidationResultMessage] = validateLicense(validIssuer, validAudience, dataverseOrganizationUniqueName, claimsJson);
+        const [claimsValidationResult, claimsValidationResultMessage] = validateClaims(validIssuer, validAudience, organizationId, claimsJson);
 
-        if (!contentValidationResult) {
-            return [contentValidationResultMessage];
+        if (!claimsValidationResult) {
+            return {
+                isValid: false,
+                reason: claimsValidationResultMessage
+            };
         }
 
         const isLicenseSignatureValid = await window.crypto.subtle.verify(
@@ -103,9 +117,26 @@ export const checkLicense = async (validIssuer: string, validAudience: string, d
             new TextEncoder().encode(encodedHeaders + "." + encodedClaims)
         );
 
-        return [isLicenseSignatureValid ? "" : "Invalid license signature: Verification failed!", isLicenseSignatureValid ? claimsJson : undefined];
+        if (!isLicenseSignatureValid)
+        {
+            return {
+                isValid: false,
+                reason: "Invalid license signature: Verification failed!"
+            };
+        }
+        else
+        {
+            return {
+                isValid: true,
+                reason: "",
+                license: claimsJson
+            };
+        }
     }
     catch {
-        return ["Oops, something went wrong while validating your license"];
+        return {
+            isValid: false,
+            reason: "Oops, something went wrong while validating your license"
+        };
     }
 };

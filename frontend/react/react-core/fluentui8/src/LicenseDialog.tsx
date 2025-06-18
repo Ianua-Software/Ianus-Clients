@@ -24,14 +24,14 @@ const dialogContentProps = {
 };
 
 export interface ILicenseDialogProps {
-    issuerIdentifier: string;
-    productIdentifier: string;
+    issuerId: string;
+    productId: string;
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
     onSubmit: () => void;
     onCancel: () => void;
 }
 
-export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ issuerIdentifier, productIdentifier, dataProvider, onCancel, onSubmit }) => {
+export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ issuerId, productId, dataProvider, onCancel, onSubmit }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
     
     const [ submitBlocked, setSubmitBlocked ] = React.useState(true);
@@ -42,7 +42,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ issuerIdentifier,
         (async() => {
             if (!licenseId)
             {
-                const licenses = await acquireLicenses(issuerIdentifier, productIdentifier, dataProvider);
+                const licenses = await acquireLicenses(issuerId, productId, dataProvider);
 
                 if (licenses.length > 0)
                 {
@@ -92,8 +92,8 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ issuerIdentifier,
 
     const onSubmitClick = async () => {
         const displayNames = tryToExtractDisplayNames(licenseKeyInput);
-        const name = `${displayNames?.issuer ?? issuerIdentifier}-${displayNames?.product ?? productIdentifier}`;
-        const identifier = `${issuerIdentifier}-${productIdentifier}`;
+        const name = `${displayNames?.issuer ?? issuerId}-${displayNames?.product ?? productId}`;
+        const identifier = `${issuerId}-${productId}`;
 
         if (licenseId) {
             if (isWebApi(dataProvider)) {
@@ -165,7 +165,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ issuerIdentifier,
                     <span style={{fontWeight: 'bold'}}>Licensed Dataverse Environment: </span> <span>{licenseState.license?.licenseClaims.env?.join(", ")}</span>
                 </p>                
                 <p>
-                    <span style={{fontWeight: 'bold'}}>License expires after: </span> <span>{new Date(licenseState.license?.licenseClaims.exp * 1000).toISOString()}</span>
+                    <span style={{fontWeight: 'bold'}}>License expires after: </span> <span>{!licenseState.license?.licenseClaims.exp ? "Never" : new Date(licenseState.license?.licenseClaims.exp * 1000).toISOString()}</span>
                 </p>
             </Text>
         }

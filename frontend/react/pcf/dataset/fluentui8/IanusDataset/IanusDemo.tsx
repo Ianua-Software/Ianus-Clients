@@ -2,15 +2,16 @@ import * as React from 'react';
 import { DefaultButton, Label } from '@fluentui/react';
 import { IanusProvider } from "../../../../react-core/fluentui8/src/IanusProvider";
 import { useLicenseContext } from '../../../../react-core/fluentui8/src/IanusLicenseStateProvider';
+import { LicenseValidationResult } from '../../../../../ianus-core/LicenseValidationResult';
 
 export interface IIanusDemoProps {
-  product: string;
+  productId: string;
   publicKey: string;
-  issuer: string;
-  environmentInfo: string | ComponentFramework.PropertyTypes.DataSet;
+  issuerId: string;
+  organizationId: string | ComponentFramework.PropertyTypes.DataSet;
   dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onLicenseValidated?: (result: { isValid: boolean; }) => any
+  onLicenseValidated?: (result: LicenseValidationResult) => any
 }
 
 const IanusDemoApp: React.FC = () => {
@@ -27,13 +28,13 @@ const IanusDemoApp: React.FC = () => {
 }
 
 
-export const IanusDemo: React.FC<IIanusDemoProps> = ({ product, publicKey, issuer, environmentInfo, dataProvider, onLicenseValidated }) => {
+export const IanusDemo: React.FC<IIanusDemoProps> = ({ productId, publicKey, issuerId, organizationId, dataProvider, onLicenseValidated }) => {
   return (
     <IanusProvider
-      issuerIdentifier={issuer}
-      productIdentifier={product}
+      issuerId={issuerId}
+      productId={productId}
       publicKey={publicKey}
-      environmentInfo={environmentInfo}
+      organizationId={organizationId}
       dataProvider={dataProvider}
       onLicenseValidated={onLicenseValidated}
     >

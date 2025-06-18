@@ -1,4 +1,4 @@
-import { LicenseValidationResult } from "../../../../react-core/fluentui8/LicenseValidationResult";
+import { LicenseValidationResult } from "../../../../../ianus-core/LicenseValidationResult";
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { IanusDemo, IIanusDemoProps } from "./IanusDemo";
 import * as React from "react";
@@ -40,10 +40,10 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
      */
     public updateView(context: ComponentFramework.Context<IInputs>): React.ReactElement {
         const props: IIanusDemoProps = {
-            product: context.parameters.product.raw ?? "",
+            productId: context.parameters.product.raw ?? "",
             publicKey: context.parameters.publicKey.raw ?? "",
-            issuer: context.parameters.issuer.raw ?? "",
-            environmentInfo: context.parameters.environmentInformationDataSet,
+            issuerId: context.parameters.issuer.raw ?? "",
+            organizationId: context.parameters.environmentInformationDataSet,
             dataProvider: context.parameters.licenseDataSet,
             onLicenseValidated: this.onLicenseValidated
         };

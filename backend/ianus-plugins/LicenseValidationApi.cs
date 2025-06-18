@@ -15,7 +15,7 @@ namespace Ianua.Ianus.Plugins
     public class LicenseValidationApi : PluginBase
     {
         public LicenseValidationApi(string unsecureConfiguration, string secureConfiguration)
-            : base(typeof(EnvironmentInfoDataSource))
+            : base(typeof(LicenseValidationApi))
         {
             // TODO: Implement your custom configuration handling
             // https://docs.microsoft.com/powerapps/developer/common-data-service/register-plug-in#set-configuration-data
@@ -62,7 +62,7 @@ namespace Ianua.Ianus.Plugins
 
                         try
                         {
-                            var licenseValidationResult = LicenseValidation.VerifyLicense(issuer, product, publicKey, licenseKey, localPluginContext.InitiatingUserService);
+                            var licenseValidationResult = LicenseValidation.ValidateLicense(issuer, product, publicKey, licenseKey, localPluginContext.InitiatingUserService);
 
                             localPluginContext.PluginExecutionContext.OutputParameters["IsLicenseValid"] = licenseValidationResult.IsValid;
                             localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = licenseValidationResult.Reason;

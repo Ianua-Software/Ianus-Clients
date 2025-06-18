@@ -59,26 +59,28 @@ namespace Ianua.Ianus.Client
             return key.VerifyData(data, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         }
 
-        private static string RetrieveEnvironmentInformation (IOrganizationService service)
+        private static Guid RetrieveOrganizationId (IOrganizationService service)
         {
             var request = new RetrieveMultipleRequest
             {
                 Query = new QueryExpression
                 {
-                    EntityName = "ian_environmentinformation"
+                    EntityName = "organization",
+                    ColumnSet = new ColumnSet("organizationid"),
+                    TopCount = 1
                 }
             };
 
             var results = (RetrieveMultipleResponse) service.Execute(request);
 
-            return results.EntityCollection.Entities.FirstOrDefault()?.GetAttributeValue<string>("ian_uniquename");
+            return results.EntityCollection.Entities.FirstOrDefault()?.Id ?? Guid.Empty;
         }
 
-        public static LicenseValidationResult ValidateLicense
+        public static LicenseValidationResult ValidateClaims
         (
             string validIssuer, 
             string validAudience, 
-            string dataverseOrganizationUniqueName, 
+            Guid organizationId, 
             LicenseClaims licenseClaims
         )
         {
@@ -91,7 +93,7 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            if (licenseClaims.env == null || !licenseClaims.env.Any() || string.IsNullOrEmpty(licenseClaims.aud) || string.IsNullOrEmpty(licenseClaims.iss) || licenseClaims.exp == 0)
+            if (licenseClaims.env == null || !licenseClaims.env.Any() || string.IsNullOrEmpty(licenseClaims.aud) || string.IsNullOrEmpty(licenseClaims.iss))
             {
                 return new LicenseValidationResult
                 {
@@ -118,24 +120,28 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            // Validate expiration date
-            var expiryDate = DateTimeOffset.FromUnixTimeSeconds(licenseClaims.exp).DateTime;
-            if (expiryDate < DateTime.UtcNow)
+            if (!licenseClaims.env.Contains(organizationId))
             {
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid license expiry: Your license has expired on '{expiryDate}'"
+                    Reason = $"Invalid organization: Your license is not intended for usage in '{organizationId}' but for '{string.Join(", ", licenseClaims.env)}'"
                 };
             }
 
-            if (!licenseClaims.env.Contains(dataverseOrganizationUniqueName.ToLower()))
+            // A license without exp claim is defined to not expire
+            if (licenseClaims.exp != null)
             {
-                return new LicenseValidationResult
+                // Validate expiration date
+                var expiryDate = DateTimeOffset.FromUnixTimeSeconds(licenseClaims.exp.Value).DateTime;
+                if (expiryDate < DateTime.UtcNow)
                 {
-                    IsValid = false,
-                    Reason = $"Invalid environment: Your license is not intended for usage in '{dataverseOrganizationUniqueName}' but for '{string.Join(", ", licenseClaims.env)}'"
-                };
+                    return new LicenseValidationResult
+                    {
+                        IsValid = false,
+                        Reason = $"Invalid license expiry: Your license has expired on '{expiryDate}'"
+                    };
+                }
             }
 
             return new LicenseValidationResult
@@ -149,7 +155,7 @@ namespace Ianua.Ianus.Client
         }
 
 
-        public static LicenseValidationResult VerifyLicense(string validIssuer, string validAudience, string publicKeyPem, string licenseKey, IOrganizationService service)
+        public static LicenseValidationResult ValidateLicense(string validIssuer, string validAudience, string publicKeyPem, string licenseKey, IOrganizationService service)
         {
             var key = ImportRsaPublicKey(publicKeyPem);
 
@@ -178,6 +184,28 @@ namespace Ianua.Ianus.Client
             var encodedClaims = parts[1];
             var signature = parts[2];
 
+            // Base64 decode the claims
+            var plainClaims = Base64UrlDecode(encodedClaims);
+            var licenseClaims = JsonSerializer.Deserialize<LicenseClaims>(plainClaims);
+
+            var organizationId = RetrieveOrganizationId(service);
+
+            if (organizationId == Guid.Empty)
+            {
+                return new LicenseValidationResult
+                {
+                    IsValid = false,
+                    Reason = "Failed to retrieve dataverse organization unique name!"
+                };
+            }
+
+            var licenseValidationResult = ValidateClaims(validIssuer, validAudience, organizationId, licenseClaims);
+
+            if (!licenseValidationResult.IsValid)
+            {
+                return licenseValidationResult;
+            }
+
             // Create the data to verify (headers.claims)
             var dataToVerify = Encoding.UTF8.GetBytes($"{encodedHeaders}.{encodedClaims}");
 
@@ -192,25 +220,10 @@ namespace Ianua.Ianus.Client
                     Reason = "Invalid license signature: Verification failed!"
                 };
             }
-
-            // Base64 decode the claims
-            var plainClaims = Base64UrlDecode(encodedClaims);
-            var licenseClaims = JsonSerializer.Deserialize<LicenseClaims>(plainClaims);
-
-            var dataverseOrganizationUniqueName = RetrieveEnvironmentInformation(service);
-
-            if (string.IsNullOrEmpty(dataverseOrganizationUniqueName))
+            else
             {
-                return new LicenseValidationResult
-                {
-                    IsValid = false,
-                    Reason = "Failed to retrieve dataverse organization unique name!"
-                };
+                return licenseValidationResult;
             }
-
-            var licenseValidationResult = ValidateLicense(validIssuer, validAudience, dataverseOrganizationUniqueName, licenseClaims);
-
-            return licenseValidationResult;
         }
     }
 }

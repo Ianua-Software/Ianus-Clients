@@ -5,7 +5,7 @@ export interface ILicense {
     iss_name: string;
     sub: string;
     sub_name: string;
-    exp: number;
+    exp?: number;
     env: string[];
     custom: Record<string, string>;
 }
