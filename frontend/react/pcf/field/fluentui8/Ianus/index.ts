@@ -34,9 +34,9 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
      */
     public updateView(context: ComponentFramework.Context<IInputs>): React.ReactElement {
         const props: IIanusDemoProps = {
-            productId: context.parameters.product.raw ?? "",
+            isvId: context.parameters.isvId.raw ?? "",
+            productId: context.parameters.productId.raw ?? "",
             publicKey: context.parameters.publicKey.raw ?? "",
-            issuerId: context.parameters.issuer.raw ?? "",
             organizationId: (context as unknown as { orgSettings: { attributes: { organizationid: string }}}).orgSettings.attributes.organizationid,
             dataProvider: context.webAPI
         };

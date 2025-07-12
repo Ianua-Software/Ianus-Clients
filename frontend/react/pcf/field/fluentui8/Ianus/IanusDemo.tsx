@@ -5,9 +5,9 @@ import { IInputs } from './generated/ManifestTypes';
 import { useLicenseContext } from '../../../../react-core/fluentui8/src/IanusLicenseStateProvider';
 
 export interface IIanusDemoProps {
+  isvId: string;
   productId: string;
   publicKey: string;
-  issuerId: string;
   organizationId: string;
   dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
 }
@@ -26,12 +26,12 @@ const IanusDemoApp: React.FC = () => {
 }
 
 
-export const IanusDemo: React.FC<IIanusDemoProps> = ({ productId, publicKey, issuerId, organizationId, dataProvider }) => {
+export const IanusDemo: React.FC<IIanusDemoProps> = ({ isvId, productId, publicKey, organizationId, dataProvider }) => {
   return (
     <IanusProvider
+      isvId={isvId}
       productId={productId}
       publicKey={publicKey}
-      issuerId={issuerId}
       organizationId={organizationId}
       dataProvider={dataProvider}
     >

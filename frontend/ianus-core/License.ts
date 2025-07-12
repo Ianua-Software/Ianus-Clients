@@ -1,11 +1,25 @@
+export interface IMeta {
+    name: string;
+}
+
 export interface ILicense {
-    aud: string;
-    aud_name: string;
+    jti: string;
     iss: string;
-    iss_name: string;
+    aud: string;
+    isv: string;
+    prd: string;
     sub: string;
-    sub_name: string;
-    exp?: number;
     env: string[];
-    custom: Record<string, string>;
+    required_roles: string[];
+    iat: number;
+    nbf: number;
+    exp?: number;
+    custom: Record<string, any>;
+    iss_meta: IMeta;
+    aud_meta: IMeta;
+    isv_meta: IMeta;
+    prd_meta: IMeta;
+    sub_meta: IMeta;
+    env_meta: Record<string, IMeta>;
+    ver: string;
 }

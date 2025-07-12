@@ -110,16 +110,18 @@ namespace Ianua.Ianus.Client
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid license issuer: License must be issued by '{validIssuer}'"
+                    Reason = $"Invalid license issuer: Issuer must be '{validIssuer}'"
                 };
             }
 
-            if (!string.Equals(licenseClaims.Aud, "ianusguard", StringComparison.InvariantCultureIgnoreCase))
+            var validAudience = "ianusguard";
+
+            if (!string.Equals(licenseClaims.Aud, validAudience, StringComparison.InvariantCultureIgnoreCase))
             {
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid license audience: License must have audience 'ianusguard'"
+                    Reason = $"Invalid license audience: Audience must be '{validAudience}'"
                 };
             }
 
@@ -128,7 +130,7 @@ namespace Ianua.Ianus.Client
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid license ISV: License must be issued by '{validIsvId}'"
+                    Reason = $"Invalid license ISV: ISV must be '{validIsvId}'"
                 };
             }
 
@@ -137,7 +139,7 @@ namespace Ianua.Ianus.Client
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid license product: License product must be '{validProductId}'"
+                    Reason = $"Invalid license product: Product must be '{validProductId}'"
                 };
             }
 
@@ -160,7 +162,7 @@ namespace Ianua.Ianus.Client
                     return new LicenseValidationResult
                     {
                         IsValid = false,
-                        Reason = $"Invalid license expiry: Your license has expired on '{expiryDate}'"
+                        Reason = $"Invalid license expiry: License expired on '{expiryDate}'"
                     };
                 }
             }

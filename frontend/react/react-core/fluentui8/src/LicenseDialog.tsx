@@ -24,14 +24,14 @@ const dialogContentProps = {
 };
 
 export interface ILicenseDialogProps {
-    issuerId: string;
+    isvId: string;
     productId: string;
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
     onSubmit: () => void;
     onCancel: () => void;
 }
 
-export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ issuerId, productId, dataProvider, onCancel, onSubmit }) => {
+export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ isvId, productId, dataProvider, onCancel, onSubmit }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
     
     const [ submitBlocked, setSubmitBlocked ] = React.useState(true);
@@ -42,7 +42,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ issuerId, product
         (async() => {
             if (!licenseId)
             {
-                const licenses = await acquireLicenses(issuerId, productId, dataProvider);
+                const licenses = await acquireLicenses(isvId, productId, dataProvider);
 
                 if (licenses.length > 0)
                 {
@@ -92,8 +92,8 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ issuerId, product
 
     const onSubmitClick = async () => {
         const displayNames = tryToExtractDisplayNames(licenseKeyInput);
-        const name = `${displayNames?.issuer ?? issuerId}-${displayNames?.product ?? productId}`;
-        const identifier = `${issuerId}-${productId}`;
+        const name = `${displayNames?.issuer ?? isvId}-${displayNames?.product ?? productId}`;
+        const identifier = `${isvId}-${productId}`;
 
         if (licenseId) {
             if (isWebApi(dataProvider)) {
@@ -153,19 +153,19 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ issuerId, product
                 <br />
                 <h3>License Information</h3>
                 <p>
-                    <span style={{fontWeight: 'bold'}}>License Publisher: </span> <span title={licenseState.license?.licenseClaims.iss}>{licenseState.license?.licenseClaims.iss_name}</span>
+                    <span style={{fontWeight: 'bold'}}>License Publisher: </span> <span title={licenseState.license?.licenseClaims.iss}>{licenseState.license?.licenseClaims?.isv_meta?.name}</span>
                 </p>
                 <p>
-                    <span style={{fontWeight: 'bold'}}>Licensed Product: </span> <span title={licenseState.license?.licenseClaims.aud}>{licenseState.license?.licenseClaims.aud_name}</span>
+                    <span style={{fontWeight: 'bold'}}>Licensed Product: </span> <span title={licenseState.license?.licenseClaims.aud}>{licenseState.license?.licenseClaims?.prd_meta?.name}</span>
                 </p>
                 <p>
-                    <span style={{fontWeight: 'bold'}}>Licensed Customer: </span> <span title={licenseState.license?.licenseClaims.sub}>{licenseState.license?.licenseClaims.sub_name}</span>
+                    <span style={{fontWeight: 'bold'}}>Licensed Customer: </span> <span title={licenseState.license?.licenseClaims.sub}>{licenseState.license?.licenseClaims?.sub_meta?.name}</span>
                 </p>
                 <p>
-                    <span style={{fontWeight: 'bold'}}>Licensed Dataverse Environment: </span> <span>{licenseState.license?.licenseClaims.env?.join(", ")}</span>
+                    <span style={{fontWeight: 'bold'}}>Licensed Dataverse Environment: </span> <span>{licenseState.license?.licenseClaims?.env?.join(", ")}</span>
                 </p>                
                 <p>
-                    <span style={{fontWeight: 'bold'}}>License expires after: </span> <span>{!licenseState.license?.licenseClaims.exp ? "Never" : new Date(licenseState.license?.licenseClaims.exp * 1000).toISOString()}</span>
+                    <span style={{fontWeight: 'bold'}}>License expires after: </span> <span>{!licenseState.license?.licenseClaims?.exp ? "Never" : new Date(licenseState.license?.licenseClaims.exp * 1000).toISOString()}</span>
                 </p>
             </Text>
         }

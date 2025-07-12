@@ -29,7 +29,7 @@ const importRsaKey = (pem: string) => {
     );
 };
 
-const validateClaims = (validIssuer: string, validAudience: string, organizationId: string, license: ILicense): [boolean, string] => {
+const validateClaims = (validIsvId: string, validProductId: string, organizationId: string, license: ILicense): [boolean, string] => {
     if (!license) {
         return [false, "No license passed!"];
     }
@@ -38,12 +38,24 @@ const validateClaims = (validIssuer: string, validAudience: string, organization
         return [false, "Incomplete license!"];
     }
 
-    if (license.iss !== validIssuer) {
-        return [false, `Invalid license issuer: License must be issued by '${validIssuer}'`];
+    const validIssuer = `https://www.ianusguard.com/api/public/products/${validProductId}`;
+
+    if (license.iss.toLowerCase() !== validIssuer.toLowerCase()) {
+        return [false, `Invalid license issuer: Issuer must be '${validIssuer}'`];
     }
 
+    const validAudience = "ianusguard";
+
     if (license.aud !== validAudience) {
-        return [false, `Invalid license audience: License audience must be '${validAudience}'`];
+        return [false, `Invalid license audience: Audience must be '${validIsvId}'`];
+    }
+
+    if (license.isv !== validIsvId) {
+        return [false, `Invalid license ISV: ISV must be '${validIsvId}'`];
+    }
+
+    if (license.prd !== validProductId) {
+        return [false, `Invalid license product: Product must be '${validProductId}'`];
     }
 
     const formattedOrganizationId = organizationId.replace("{", "").replace("}", "").toLowerCase();
@@ -55,12 +67,12 @@ const validateClaims = (validIssuer: string, validAudience: string, organization
     if (license.exp != null )
     {
         if(isNaN(license.exp)) {
-            return [false, "Invalid license expiry: License expiry is not a number"];
+            return [false, "Invalid license expiry: Expiry is not a number"];
         }
 
         const expiryDate = new Date(license.exp * 1000);
         if (expiryDate < new Date()) {
-            return [false, `Invalid license expiry: Your license has expired on '${expiryDate}'`];
+            return [false, `Invalid license expiry: License expired on '${expiryDate}'`];
         }
     }
 
@@ -77,7 +89,17 @@ const base64url_decode = (value: string): ArrayBuffer => {
     ), c => c.charCodeAt(0)).buffer
 };
 
-export const validateLicense = async (validIssuer: string, validAudience: string, organizationId: string, publicKey: string, licenseKey: string | undefined): Promise<LicenseValidationResult> => {
+const verifySignature = async (key: CryptoKey, dataToVerify: BufferSource, signature: BufferSource) =>
+{
+    return await window.crypto.subtle.verify(
+        "RSASSA-PKCS1-v1_5",
+        key,
+        signature,
+        dataToVerify
+    );
+}
+
+export const validateLicense = async (validIsvId: string, validProductId: string, organizationId: string, publicKey: string, licenseKey: string | undefined): Promise<LicenseValidationResult> => {
     if (!licenseKey) {
         return {
             isValid: false,
@@ -101,7 +123,7 @@ export const validateLicense = async (validIssuer: string, validAudience: string
         const plainClaims = window.atob(encodedClaims);
         const claimsJson = JSON.parse(plainClaims);
 
-        const [claimsValidationResult, claimsValidationResultMessage] = validateClaims(validIssuer, validAudience, organizationId, claimsJson);
+        const [claimsValidationResult, claimsValidationResultMessage] = validateClaims(validIsvId, validProductId, organizationId, claimsJson);
 
         if (!claimsValidationResult) {
             return {
@@ -110,12 +132,9 @@ export const validateLicense = async (validIssuer: string, validAudience: string
             };
         }
 
-        const isLicenseSignatureValid = await window.crypto.subtle.verify(
-            "RSASSA-PKCS1-v1_5",
-            key,
-            base64url_decode(signature),
-            new TextEncoder().encode(encodedHeaders + "." + encodedClaims)
-        );
+        const dataToVerify = new TextEncoder().encode(encodedHeaders + "." + encodedClaims);
+        const signatureToVerify = base64url_decode(signature);
+        const isLicenseSignatureValid = verifySignature(key, dataToVerify, signatureToVerify);
 
         if (!isLicenseSignatureValid)
         {

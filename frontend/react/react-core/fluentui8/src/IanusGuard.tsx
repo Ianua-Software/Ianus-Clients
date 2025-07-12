@@ -12,7 +12,7 @@ import { LicenseDialog } from './LicenseDialog';
 import { useLicenseContext } from './IanusLicenseStateProvider';
 
 export interface IIanusGuardProps {
-    issuerId: string;
+    isvId: string;
     productId: string;
     publicKey: string;
     organizationId: string | ComponentFramework.PropertyTypes.DataSet;
@@ -75,7 +75,7 @@ const extractOrganizationIdFromDataset = (dataset: ComponentFramework.PropertyTy
     return "";
 };
 
-export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerId, productId, publicKey, organizationId, dataProvider, onLicenseValidated, children }) => {
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ isvId, productId, publicKey, organizationId, dataProvider, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
     const onSettingsFinally = () => {
@@ -101,7 +101,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerId, productId, pu
                 };
             }
 
-            const licenses = await acquireLicenses(issuerId, productId, dataProvider);
+            const licenses = await acquireLicenses(isvId, productId, dataProvider);
 
             if (!licenses.length) {
                 licenseDispatch({ type: "setLicenseError", payload: "No license found!" });
@@ -112,10 +112,10 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerId, productId, pu
             }
 
             if (licenses.length > 1) {
-                licenseDispatch({ type: "setLicenseError", payload: `Multiple active licenses for '${issuerId}-${productId}' found, please make sure there is only one active license` });
+                licenseDispatch({ type: "setLicenseError", payload: `Multiple active licenses for '${isvId}-${productId}' found, please make sure there is only one active license` });
                 return {
                     isValid: false,
-                    reason: `Multiple active licenses for '${issuerId}-${productId}' found, please make sure there is only one active license`
+                    reason: `Multiple active licenses for '${isvId}-${productId}' found, please make sure there is only one active license`
                 };
             }
 
@@ -125,7 +125,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerId, productId, pu
             ? extractOrganizationIdFromDataset(organizationId)
             : organizationId as string;
 
-            const validationResult = await validateLicense(issuerId, productId, resolvedOrganizationId, publicKey, licenseRecord.ian_key);
+            const validationResult = await validateLicense(isvId, productId, resolvedOrganizationId, publicKey, licenseRecord.ian_key);
 
             if ( !validationResult.isValid ) {
                 licenseDispatch({ type: "setLicenseError", payload: validationResult.reason || "No license claims found!" });
@@ -175,12 +175,12 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ issuerId, productId, pu
 
     return licenseState.license
         ? ( <>
-            { licenseState.licenseDialogVisible && <LicenseDialog issuerId={issuerId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+            { licenseState.licenseDialogVisible && <LicenseDialog isvId={isvId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
             { children }
         </> )
         : (
             <div style={{ display: "flex", width: "100%", height: "100%", flex: "1" }}>
-                { licenseState.licenseDialogVisible && <LicenseDialog issuerId={issuerId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+                { licenseState.licenseDialogVisible && <LicenseDialog isvId={isvId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1}}>
                     { !!licenseState.licenseError &&
                         <MessageBar
