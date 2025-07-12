@@ -12,8 +12,8 @@ namespace Ianua.Ianus.Client
             {
                 RequestName = "ian_LicenseValidation",
                 Parameters = {
-                    { "Issuer", request.Issuer },
-                    { "Product", request.Product },
+                    { "IsvId", request.IsvId },
+                    { "ProductId", request.ProductId },
                     { "PublicKey", request.PublicKey }
                 }
             };

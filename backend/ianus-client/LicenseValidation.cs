@@ -9,6 +9,7 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.OpenSsl;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
+using System.Collections.Generic;
 
 namespace Ianua.Ianus.Client
 {
@@ -78,8 +79,8 @@ namespace Ianua.Ianus.Client
 
         public static LicenseValidationResult ValidateClaims
         (
-            string validIssuer, 
-            string validAudience, 
+            Guid validIsvId, 
+            Guid validProductId, 
             Guid organizationId, 
             LicenseClaims licenseClaims
         )
@@ -93,7 +94,7 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            if (licenseClaims.env == null || !licenseClaims.env.Any() || string.IsNullOrEmpty(licenseClaims.aud) || string.IsNullOrEmpty(licenseClaims.iss))
+            if (licenseClaims.Env == null || !licenseClaims.Env.Any() || string.IsNullOrEmpty(licenseClaims.Aud) || string.IsNullOrEmpty(licenseClaims.Iss))
             {
                 return new LicenseValidationResult
                 {
@@ -102,7 +103,9 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            if (licenseClaims.iss != validIssuer)
+            var validIssuer = $"https://www.ianusguard.com/api/public/products/{validProductId}";
+
+            if (!string.Equals(validIssuer, licenseClaims.Iss, StringComparison.InvariantCultureIgnoreCase))
             {
                 return new LicenseValidationResult
                 {
@@ -111,29 +114,47 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            if (licenseClaims.aud != validAudience)
+            if (!string.Equals(licenseClaims.Aud, "ianusguard", StringComparison.InvariantCultureIgnoreCase))
             {
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid license audience: License audience must be '{validAudience}'"
+                    Reason = $"Invalid license audience: License must have audience 'ianusguard'"
                 };
             }
 
-            if (!licenseClaims.env.Contains(organizationId))
+            if (licenseClaims.Isv != validIsvId)
             {
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid organization: Your license is not intended for usage in '{organizationId}' but for '{string.Join(", ", licenseClaims.env)}'"
+                    Reason = $"Invalid license ISV: License must be issued by '{validIsvId}'"
+                };
+            }
+
+            if (licenseClaims.Prd != validProductId)
+            {
+                return new LicenseValidationResult
+                {
+                    IsValid = false,
+                    Reason = $"Invalid license product: License product must be '{validProductId}'"
+                };
+            }
+
+            if (!licenseClaims.Env.Contains(organizationId))
+            {
+                return new LicenseValidationResult
+                {
+                    IsValid = false,
+                    Reason = $"Invalid organization: Your license is not intended for usage in '{organizationId}' but for '{string.Join(", ", licenseClaims.Env)}'"
                 };
             }
 
             // A license without exp claim is defined to not expire
-            if (licenseClaims.exp != null)
+            if (licenseClaims.Exp != null)
             {
                 // Validate expiration date
-                var expiryDate = DateTimeOffset.FromUnixTimeSeconds(licenseClaims.exp.Value).DateTime;
+                var expiryDate = DateTimeOffset.FromUnixTimeSeconds(licenseClaims.Exp.Value).DateTime;
                 if (expiryDate < DateTime.UtcNow)
                 {
                     return new LicenseValidationResult
@@ -149,13 +170,12 @@ namespace Ianua.Ianus.Client
                 IsValid = true,
                 License = new License
                 {
-                    claims = licenseClaims
+                    Claims = licenseClaims
                 }
             };
         }
 
-
-        public static LicenseValidationResult ValidateLicense(string validIssuer, string validAudience, string publicKeyPem, string licenseKey, IOrganizationService service)
+        public static LicenseValidationResult ValidateLicense(Guid validIsvId, Guid validProductId, string publicKeyPem, string licenseKey, IOrganizationService service)
         {
             var key = ImportRsaPublicKey(publicKeyPem);
 
@@ -199,7 +219,7 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            var licenseValidationResult = ValidateClaims(validIssuer, validAudience, organizationId, licenseClaims);
+            var licenseValidationResult = ValidateClaims(validIsvId, validProductId, organizationId, licenseClaims);
 
             if (!licenseValidationResult.IsValid)
             {

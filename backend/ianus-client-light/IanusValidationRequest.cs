@@ -1,9 +1,11 @@
+using System;
+
 namespace Ianua.Ianus.Client
 {
     public class IanusValidationRequest
     {
-        public string Issuer { get; set; }
-        public string Product { get; set; }
+        public Guid IsvId { get; set; }
+        public Guid ProductId { get; set; }
         public string PublicKey { get; set; }
     }
 }

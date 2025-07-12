@@ -33,14 +33,14 @@ namespace Ianua.Ianus.Plugins
 
                 try
                 {
-                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("Issuer", out string issuer) || string.IsNullOrEmpty(issuer))
+                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("IsvId", out string isv) || !Guid.TryParse(isv, out Guid isvId))
                     {
-                        throw new InvalidPluginExecutionException("The input parameter 'Issuer' is missing or empty!");
+                        throw new InvalidPluginExecutionException("The input parameter 'IsvId' is missing or not a valid guid!");
                     }
 
-                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("Product", out string product) || string.IsNullOrEmpty(product))
+                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("ProductId", out string product) || !Guid.TryParse(product, out Guid productId))
                     {
-                        throw new InvalidPluginExecutionException("The input parameter 'Product' is missing or empty!");
+                        throw new InvalidPluginExecutionException("The input parameter 'ProductId' is missing or empty!");
                     }
 
                     if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("PublicKey", out string publicKey) || string.IsNullOrEmpty(publicKey))
@@ -48,7 +48,7 @@ namespace Ianua.Ianus.Plugins
                         throw new InvalidPluginExecutionException("The input parameter 'PublicKey' is missing or empty!");
                     }
 
-                    var license = RetrieveLicense(localPluginContext, issuer, product);
+                    var license = RetrieveLicense(localPluginContext, isvId, productId);
 
                     if (license == null)
                     {
@@ -62,7 +62,7 @@ namespace Ianua.Ianus.Plugins
 
                         try
                         {
-                            var licenseValidationResult = LicenseValidation.ValidateLicense(issuer, product, publicKey, licenseKey, localPluginContext.InitiatingUserService);
+                            var licenseValidationResult = LicenseValidation.ValidateLicense(isvId, productId, publicKey, licenseKey, localPluginContext.InitiatingUserService);
 
                             localPluginContext.PluginExecutionContext.OutputParameters["IsLicenseValid"] = licenseValidationResult.IsValid;
                             localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = licenseValidationResult.Reason;
@@ -88,13 +88,13 @@ namespace Ianua.Ianus.Plugins
             }
         }
 
-        private static Entity RetrieveLicense(ILocalPluginContext localPluginContext, string issuer, string product)
+        private static Entity RetrieveLicense(ILocalPluginContext localPluginContext, Guid isvId, Guid productId)
         {
             try
             {
                 var alternateKey = new KeyAttributeCollection
                 {
-                    { "ian_identifier", $"{issuer}-{product}" }
+                    { "ian_identifier", $"{isvId}-{productId}" }
                 };
 
                 var entityRef = new EntityReference("ian_license", alternateKey);
