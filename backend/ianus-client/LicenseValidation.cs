@@ -79,13 +79,13 @@ namespace Ianua.Ianus.Client
 
         public static LicenseValidationResult ValidateClaims
         (
-            Guid validIsvId, 
-            Guid validProductId, 
+            Guid publisherId, 
+            Guid productId, 
             Guid organizationId, 
-            LicenseClaims licenseClaims
+            License license
         )
         {
-            if (licenseClaims == null)
+            if (license == null)
             {
                 return new LicenseValidationResult
                 {
@@ -94,7 +94,7 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            if (licenseClaims.Env == null || !licenseClaims.Env.Any() || string.IsNullOrEmpty(licenseClaims.Aud) || string.IsNullOrEmpty(licenseClaims.Iss))
+            if (license.Env == null || !license.Env.Any() || string.IsNullOrEmpty(license.Aud) || string.IsNullOrEmpty(license.Iss))
             {
                 return new LicenseValidationResult
                 {
@@ -103,9 +103,9 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            var validIssuer = $"https://www.ianusguard.com/api/public/products/{validProductId}";
+            var validIssuer = $"https://www.ianusguard.com/api/public/products/{productId}";
 
-            if (!string.Equals(validIssuer, licenseClaims.Iss, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.Equals(validIssuer, license.Iss, StringComparison.InvariantCultureIgnoreCase))
             {
                 return new LicenseValidationResult
                 {
@@ -116,7 +116,7 @@ namespace Ianua.Ianus.Client
 
             var validAudience = "ianusguard";
 
-            if (!string.Equals(licenseClaims.Aud, validAudience, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.Equals(license.Aud, validAudience, StringComparison.InvariantCultureIgnoreCase))
             {
                 return new LicenseValidationResult
                 {
@@ -125,38 +125,38 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            if (licenseClaims.Isv != validIsvId)
+            if (license.Pub != publisherId)
             {
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid license ISV: ISV must be '{validIsvId}'"
+                    Reason = $"Invalid license publisher: Publisher must be '{publisherId}'"
                 };
             }
 
-            if (licenseClaims.Prd != validProductId)
+            if (license.Prd != productId)
             {
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid license product: Product must be '{validProductId}'"
+                    Reason = $"Invalid license product: Product must be '{productId}'"
                 };
             }
 
-            if (!licenseClaims.Env.Contains(organizationId))
+            if (!license.Env.Any(e => string.Equals(e.Type, "dataverse", StringComparison.InvariantCultureIgnoreCase) && Guid.TryParse(e.Identifier, out var parsedIdentifier) && parsedIdentifier == organizationId))
             {
                 return new LicenseValidationResult
                 {
                     IsValid = false,
-                    Reason = $"Invalid organization: Your license is not intended for usage in '{organizationId}' but for '{string.Join(", ", licenseClaims.Env)}'"
+                    Reason = $"Invalid organization: Your license is not intended for usage in '{organizationId}' but for '{string.Join(", ", license.Env.Select(e => $"{e.Identifier} ({e.Name})"))}'"
                 };
             }
 
             // A license without exp claim is defined to not expire
-            if (licenseClaims.Exp != null)
+            if (license.Exp != null)
             {
                 // Validate expiration date
-                var expiryDate = DateTimeOffset.FromUnixTimeSeconds(licenseClaims.Exp.Value).DateTime;
+                var expiryDate = DateTimeOffset.FromUnixTimeSeconds(license.Exp.Value).DateTime;
                 if (expiryDate < DateTime.UtcNow)
                 {
                     return new LicenseValidationResult
@@ -170,10 +170,7 @@ namespace Ianua.Ianus.Client
             return new LicenseValidationResult
             {
                 IsValid = true,
-                License = new License
-                {
-                    Claims = licenseClaims
-                }
+                License = license
             };
         }
 
@@ -208,7 +205,7 @@ namespace Ianua.Ianus.Client
 
             // Base64 decode the claims
             var plainClaims = Base64UrlDecode(encodedClaims);
-            var licenseClaims = JsonSerializer.Deserialize<LicenseClaims>(plainClaims);
+            var license = JsonSerializer.Deserialize<License>(plainClaims);
 
             var organizationId = RetrieveOrganizationId(service);
 
@@ -221,7 +218,7 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            var licenseValidationResult = ValidateClaims(validIsvId, validProductId, organizationId, licenseClaims);
+            var licenseValidationResult = ValidateClaims(validIsvId, validProductId, organizationId, license);
 
             if (!licenseValidationResult.IsValid)
             {

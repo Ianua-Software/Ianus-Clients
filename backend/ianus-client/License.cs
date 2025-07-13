@@ -4,13 +4,25 @@ using System.Text.Json.Serialization;
 
 namespace Ianua.Ianus.Client
 {
-    public class Meta : IMeta
+    public class Meta
     {
         [JsonPropertyName("name")]
         public string Name { get; set; }
     }
 
-    public class LicenseClaims : ILicenseClaims
+    public class EnvironmentIdentifier
+    {
+        [JsonPropertyName("type")]
+        public string Type { get; set; }
+
+        [JsonPropertyName("identifier")]
+        public string Identifier { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+    }
+
+    public class License
     {
         [JsonPropertyName("jti")]
         public Guid Jti { get; set; }
@@ -21,8 +33,8 @@ namespace Ianua.Ianus.Client
         [JsonPropertyName("aud")]
         public string Aud { get; set; }
 
-        [JsonPropertyName("isv")]
-        public Guid Isv { get; set; }
+        [JsonPropertyName("pub")]
+        public Guid Pub { get; set; }
 
         [JsonPropertyName("prd")]
         public Guid Prd { get; set; }
@@ -31,7 +43,7 @@ namespace Ianua.Ianus.Client
         public Guid Sub { get; set; }
 
         [JsonPropertyName("env")]
-        public List<Guid> Env { get; set; }
+        public List<EnvironmentIdentifier> Env { get; set; }
 
         [JsonPropertyName("required_roles")]
         public List<string> RequiredRoles { get; set; }
@@ -50,26 +62,18 @@ namespace Ianua.Ianus.Client
 
         // Human-readable names for clarity
         [JsonPropertyName("iss_meta")]
-        public IMeta IssMeta { get; set; }
+        public Meta IssMeta { get; set; }
 
         [JsonPropertyName("aud_meta")]
-        public IMeta AudMeta { get; set; }
+        public Meta AudMeta { get; set; }
 
         [JsonPropertyName("isv_meta")]
-        public IMeta IsvMeta { get; set; }
+        public Meta IsvMeta { get; set; }
 
         [JsonPropertyName("sub_meta")]
-        public IMeta SubMeta { get; set; }
-
-        [JsonPropertyName("env_meta")]
-        public Dictionary<Guid, IMeta> EnvMeta { get; set; }
+        public Meta SubMeta { get; set; }
 
         [JsonPropertyName("ver")]
         public string Ver { get; set; }
-    }
-
-    public class License : ILicense
-    {
-        public ILicenseClaims Claims { get; set; }
     }
 }

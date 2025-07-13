@@ -30,13 +30,11 @@
   <ItemGroup>
     <!-- Files for modern SDK-style projects -->
     <Content Include="IanusValidationRequest.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
-    <Content Include="../ianus-client/ILicense.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
     <Content Include="../ianus-client/License.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
     <Content Include="LicenseValidator.cs" Pack="true" PackagePath="contentFiles/cs/any/" BuildAction="Compile" />
 
     <!-- Files for legacy projects -->
     <Content Include="IanusValidationRequest.cs" Pack="true" PackagePath="content/" BuildAction="None" />
-    <Content Include="../ianus-client/ILicense.cs" Pack="true" PackagePath="content/" BuildAction="None" />
     <Content Include="../ianus-client/License.cs" Pack="true" PackagePath="content/" BuildAction="None" />
     <Content Include="LicenseValidation.cs" Pack="true" PackagePath="content/" BuildAction="None" />
     <Content Include="LicenseValidator.cs" Pack="true" PackagePath="content/" BuildAction="None" />

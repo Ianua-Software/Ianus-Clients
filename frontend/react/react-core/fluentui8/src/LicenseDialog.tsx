@@ -24,14 +24,14 @@ const dialogContentProps = {
 };
 
 export interface ILicenseDialogProps {
-    isvId: string;
+    publisherId: string;
     productId: string;
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
     onSubmit: () => void;
     onCancel: () => void;
 }
 
-export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ isvId, productId, dataProvider, onCancel, onSubmit }) => {
+export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, productId, dataProvider, onCancel, onSubmit }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
     
     const [ submitBlocked, setSubmitBlocked ] = React.useState(true);
@@ -42,7 +42,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ isvId, productId,
         (async() => {
             if (!licenseId)
             {
-                const licenses = await acquireLicenses(isvId, productId, dataProvider);
+                const licenses = await acquireLicenses(publisherId, productId, dataProvider);
 
                 if (licenses.length > 0)
                 {
@@ -92,8 +92,8 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ isvId, productId,
 
     const onSubmitClick = async () => {
         const displayNames = tryToExtractDisplayNames(licenseKeyInput);
-        const name = `${displayNames?.issuer ?? isvId}-${displayNames?.product ?? productId}`;
-        const identifier = `${isvId}-${productId}`;
+        const name = `${displayNames?.issuer ?? publisherId}-${displayNames?.product ?? productId}`;
+        const identifier = `${publisherId}-${productId}`;
 
         if (licenseId) {
             if (isWebApi(dataProvider)) {
@@ -153,7 +153,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ isvId, productId,
                 <br />
                 <h3>License Information</h3>
                 <p>
-                    <span style={{fontWeight: 'bold'}}>License Publisher: </span> <span title={licenseState.license?.licenseClaims.iss}>{licenseState.license?.licenseClaims?.isv_meta?.name}</span>
+                    <span style={{fontWeight: 'bold'}}>License Publisher: </span> <span title={licenseState.license?.licenseClaims.pub}>{licenseState.license?.licenseClaims?.pub_meta?.name}</span>
                 </p>
                 <p>
                     <span style={{fontWeight: 'bold'}}>Licensed Product: </span> <span title={licenseState.license?.licenseClaims.aud}>{licenseState.license?.licenseClaims?.prd_meta?.name}</span>

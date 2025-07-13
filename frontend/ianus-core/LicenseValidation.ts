@@ -29,7 +29,7 @@ const importRsaKey = (pem: string) => {
     );
 };
 
-const validateClaims = (validIsvId: string, validProductId: string, organizationId: string, license: ILicense): [boolean, string] => {
+const validateClaims = (publisherId: string, productId: string, environmentType: string, environmentIdentifier: string, license: ILicense): [boolean, string] => {
     if (!license) {
         return [false, "No license passed!"];
     }
@@ -38,7 +38,7 @@ const validateClaims = (validIsvId: string, validProductId: string, organization
         return [false, "Incomplete license!"];
     }
 
-    const validIssuer = `https://www.ianusguard.com/api/public/products/${validProductId}`;
+    const validIssuer = `https://www.ianusguard.com/api/public/products/${productId}`;
 
     if (license.iss.toLowerCase() !== validIssuer.toLowerCase()) {
         return [false, `Invalid license issuer: Issuer must be '${validIssuer}'`];
@@ -47,19 +47,19 @@ const validateClaims = (validIsvId: string, validProductId: string, organization
     const validAudience = "ianusguard";
 
     if (license.aud !== validAudience) {
-        return [false, `Invalid license audience: Audience must be '${validIsvId}'`];
+        return [false, `Invalid license audience: Audience must be '${publisherId}'`];
     }
 
-    if (license.isv !== validIsvId) {
-        return [false, `Invalid license ISV: ISV must be '${validIsvId}'`];
+    if (license.pub !== publisherId) {
+        return [false, `Invalid license publisher: Publisher must be '${publisherId}'`];
     }
 
-    if (license.prd !== validProductId) {
-        return [false, `Invalid license product: Product must be '${validProductId}'`];
+    if (license.prd !== productId) {
+        return [false, `Invalid license product: Product must be '${productId}'`];
     }
 
-    const formattedOrganizationId = organizationId.replace("{", "").replace("}", "").toLowerCase();
-    if (!license.env.includes(formattedOrganizationId)) {
+    const formattedOrganizationId = environmentIdentifier.replace("{", "").replace("}", "").toLowerCase();
+    if (!license.env.some(e => e.type.toLowerCase() === environmentType && e.identifier.toLowerCase() == formattedOrganizationId)) {
         return [false, `Invalid organization: Your license is not intended for usage in '${formattedOrganizationId}' but for '${JSON.stringify(license.env)}'`];
     }
 
@@ -99,7 +99,14 @@ const verifySignature = async (key: CryptoKey, dataToVerify: BufferSource, signa
     );
 }
 
-export const validateLicense = async (validIsvId: string, validProductId: string, organizationId: string, publicKey: string, licenseKey: string | undefined): Promise<LicenseValidationResult> => {
+export const validateLicense = async (
+    publisherId: string,
+    productId: string,
+    environmentType: string,
+    environmentIdentifier: string,
+    publicKey: string,
+    licenseKey: string | undefined
+): Promise<LicenseValidationResult> => {
     if (!licenseKey) {
         return {
             isValid: false,
@@ -123,7 +130,7 @@ export const validateLicense = async (validIsvId: string, validProductId: string
         const plainClaims = window.atob(encodedClaims);
         const claimsJson = JSON.parse(plainClaims);
 
-        const [claimsValidationResult, claimsValidationResultMessage] = validateClaims(validIsvId, validProductId, organizationId, claimsJson);
+        const [claimsValidationResult, claimsValidationResultMessage] = validateClaims(publisherId, productId, environmentType, environmentIdentifier, claimsJson);
 
         if (!claimsValidationResult) {
             return {

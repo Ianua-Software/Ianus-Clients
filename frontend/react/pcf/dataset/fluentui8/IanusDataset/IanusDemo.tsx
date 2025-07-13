@@ -5,7 +5,7 @@ import { useLicenseContext } from '../../../../react-core/fluentui8/src/IanusLic
 import { LicenseValidationResult } from '../../../../../ianus-core/LicenseValidationResult';
 
 export interface IIanusDemoProps {
-  isvId: string;
+  publisherId: string;
   productId: string;
   publicKey: string;
   organizationId: string | ComponentFramework.PropertyTypes.DataSet;
@@ -28,10 +28,10 @@ const IanusDemoApp: React.FC = () => {
 }
 
 
-export const IanusDemo: React.FC<IIanusDemoProps> = ({ isvId, productId, publicKey, organizationId, dataProvider, onLicenseValidated }) => {
+export const IanusDemo: React.FC<IIanusDemoProps> = ({ publisherId, productId, publicKey, organizationId, dataProvider, onLicenseValidated }) => {
   return (
     <IanusProvider
-      isvId={isvId}
+      publisherId={publisherId}
       productId={productId}
       publicKey={publicKey}
       organizationId={organizationId}

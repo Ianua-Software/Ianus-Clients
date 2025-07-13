@@ -20,7 +20,7 @@
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
     <property name="sampleProperty" display-name-key="Property_Display_Key" description-key="Property_Desc_Key" of-type="SingleLine.Text" usage="bound" required="true" />
     
-    <property name="isvId" display-name-key="ISV Id" description-key="ISV Id using which you publish your component. This is the External Id of your Ianus organization. Copy it from Ianus portal on your organization record." of-type="SingleLine.Text" usage="input" required="true" />
+    <property name="publisherId" display-name-key="Publisher Id" description-key="Publisher Id using which you publish your component. This is the External Id of your Ianus publisher. Copy it from Ianus portal on your publisher record." of-type="SingleLine.Text" usage="input" required="true" />
     <property name="productId" display-name-key="Product Id" description-key="Id of the product you want to license. This is the External Id of your Ianus product." of-type="SingleLine.Text" usage="input" required="true" />
     <property name="publicKey" display-name-key="Public Key" description-key="Your product and product version specific public key for verifying the license. This is the public key of the product version assigned to the product you want to license." of-type="Multiple" usage="input" required="true" />
 
