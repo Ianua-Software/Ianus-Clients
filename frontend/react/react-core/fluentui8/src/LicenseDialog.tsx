@@ -162,7 +162,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
                     <span style={{fontWeight: 'bold'}}>Licensed Customer: </span> <span title={licenseState.license?.licenseClaims.sub}>{licenseState.license?.licenseClaims?.sub_meta?.name}</span>
                 </p>
                 <p>
-                    <span style={{fontWeight: 'bold'}}>Licensed Dataverse Environment: </span> <span>{licenseState.license?.licenseClaims?.env?.join(", ")}</span>
+                    <span style={{fontWeight: 'bold'}}>Licensed Dataverse Environment: </span> <span>{licenseState.license?.licenseClaims?.env?.map(e => `${e.identifier} (${e.name})`).join(", ")}</span>
                 </p>                
                 <p>
                     <span style={{fontWeight: 'bold'}}>License expires after: </span> <span>{!licenseState.license?.licenseClaims?.exp ? "Never" : new Date(licenseState.license?.licenseClaims.exp * 1000).toISOString()}</span>

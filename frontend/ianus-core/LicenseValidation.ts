@@ -127,7 +127,7 @@ export const validateLicense = async (
 
         const [encodedHeaders, encodedClaims, signature] = parts;
 
-        const plainClaims = window.atob(encodedClaims);
+        const plainClaims = new TextDecoder("utf-8").decode(base64url_decode(encodedClaims));
         const claimsJson = JSON.parse(plainClaims);
 
         const [claimsValidationResult, claimsValidationResultMessage] = validateClaims(publisherId, productId, environmentType, environmentIdentifier, claimsJson);
