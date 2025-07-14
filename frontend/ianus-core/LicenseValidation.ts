@@ -104,7 +104,7 @@ export const validateLicense = async (
     productId: string,
     environmentType: string,
     environmentIdentifier: string,
-    publicKey: string,
+    publicKeys: string[],
     licenseKey: string | undefined
 ): Promise<LicenseValidationResult> => {
     if (!licenseKey) {
@@ -115,7 +115,6 @@ export const validateLicense = async (
     }
 
     try {
-        const key = await importRsaKey(publicKey);
         const parts = licenseKey.split('.');
 
         if (parts.length < 3) {
@@ -141,23 +140,26 @@ export const validateLicense = async (
 
         const dataToVerify = new TextEncoder().encode(encodedHeaders + "." + encodedClaims);
         const signatureToVerify = base64url_decode(signature);
-        const isLicenseSignatureValid = verifySignature(key, dataToVerify, signatureToVerify);
 
-        if (!isLicenseSignatureValid)
+        for( const publicKey of publicKeys )
         {
-            return {
-                isValid: false,
-                reason: "Invalid license signature: Verification failed!"
-            };
+            const key = await importRsaKey(publicKey);
+            const isLicenseSignatureValid = await verifySignature(key, dataToVerify, signatureToVerify);
+
+            if (isLicenseSignatureValid === true)
+            {
+                return {
+                    isValid: true,
+                    reason: "",
+                    license: claimsJson
+                };
+            }
         }
-        else
-        {
-            return {
-                isValid: true,
-                reason: "",
-                license: claimsJson
-            };
-        }
+
+        return {
+            isValid: false,
+            reason: "Invalid license signature: Verification failed!"
+        };
     }
     catch {
         return {

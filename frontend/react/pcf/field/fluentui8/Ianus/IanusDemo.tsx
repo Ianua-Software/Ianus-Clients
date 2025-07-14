@@ -25,13 +25,12 @@ const IanusDemoApp: React.FC = () => {
   );
 }
 
-
 export const IanusDemo: React.FC<IIanusDemoProps> = ({ publisherId, productId, publicKey, organizationId, dataProvider }) => {
   return (
     <IanusProvider
       publisherId={publisherId}
       productId={productId}
-      publicKey={publicKey}
+      publicKeys={[publicKey]}
       organizationId={organizationId}
       dataProvider={dataProvider}
     >

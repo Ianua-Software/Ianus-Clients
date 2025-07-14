@@ -33,7 +33,7 @@ export const IanusDemo: React.FC<IIanusDemoProps> = ({ publisherId, productId, p
     <IanusProvider
       publisherId={publisherId}
       productId={productId}
-      publicKey={publicKey}
+      publicKeys={[publicKey]}
       organizationId={organizationId}
       dataProvider={dataProvider}
       onLicenseValidated={onLicenseValidated}

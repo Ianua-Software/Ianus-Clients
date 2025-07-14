@@ -14,7 +14,7 @@ import { useLicenseContext } from './IanusLicenseStateProvider';
 export interface IIanusGuardProps {
     publisherId: string;
     productId: string;
-    publicKey: string;
+    publicKeys: string[];
     organizationId: string | ComponentFramework.PropertyTypes.DataSet;
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
     onLicenseValidated?: (result: LicenseValidationResult) => unknown;
@@ -75,7 +75,7 @@ const extractOrganizationIdFromDataset = (dataset: ComponentFramework.PropertyTy
     return "";
 };
 
-export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKey, organizationId, dataProvider, onLicenseValidated, children }) => {
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys: publicKey, organizationId, dataProvider, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
     const onSettingsFinally = () => {
