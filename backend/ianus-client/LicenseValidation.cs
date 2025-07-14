@@ -174,10 +174,8 @@ namespace Ianua.Ianus.Client
             };
         }
 
-        public static LicenseValidationResult ValidateLicense(Guid validIsvId, Guid validProductId, string publicKeyPem, string licenseKey, IOrganizationService service)
+        public static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, List<string> publicKeys, string licenseKey, IOrganizationService service)
         {
-            var key = ImportRsaPublicKey(publicKeyPem);
-
             if (string.IsNullOrEmpty(licenseKey))
             {
                 return new LicenseValidationResult
@@ -218,7 +216,7 @@ namespace Ianua.Ianus.Client
                 };
             }
 
-            var licenseValidationResult = ValidateClaims(validIsvId, validProductId, organizationId, license);
+            var licenseValidationResult = ValidateClaims(publisherId, productId, organizationId, license);
 
             if (!licenseValidationResult.IsValid)
             {
@@ -228,21 +226,23 @@ namespace Ianua.Ianus.Client
             // Create the data to verify (headers.claims)
             var dataToVerify = Encoding.UTF8.GetBytes($"{encodedHeaders}.{encodedClaims}");
 
-            // Verify the signature
-            var isLicenseSignatureValid = VerifySignature(key, dataToVerify, Base64UrlDecode(signature));
+            foreach (var publicKey in publicKeys)
+            {
+                // Verify the signature
+                var key = ImportRsaPublicKey(publicKey);
+                var isLicenseSignatureValid = VerifySignature(key, dataToVerify, Base64UrlDecode(signature));
 
-            if (!isLicenseSignatureValid)
-            {
-                return new LicenseValidationResult
+                if (isLicenseSignatureValid)
                 {
-                    IsValid = false,
-                    Reason = "Invalid license signature: Verification failed!"
-                };
+                    return licenseValidationResult;
+                }
             }
-            else
+
+            return new LicenseValidationResult
             {
-                return licenseValidationResult;
-            }
+                IsValid = false,
+                Reason = "Invalid license signature: Verification failed!"
+            };
         }
     }
 }

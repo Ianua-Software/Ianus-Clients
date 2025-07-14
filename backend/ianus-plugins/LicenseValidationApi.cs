@@ -62,7 +62,7 @@ namespace Ianua.Ianus.Plugins
 
                         try
                         {
-                            var licenseValidationResult = LicenseValidation.ValidateLicense(isvId, productId, publicKey, licenseKey, localPluginContext.InitiatingUserService);
+                            var licenseValidationResult = LicenseValidation.ValidateLicense(isvId, productId, new List<string> { publicKey }, licenseKey, localPluginContext.InitiatingUserService);
 
                             localPluginContext.PluginExecutionContext.OutputParameters["IsLicenseValid"] = licenseValidationResult.IsValid;
                             localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = licenseValidationResult.Reason;
