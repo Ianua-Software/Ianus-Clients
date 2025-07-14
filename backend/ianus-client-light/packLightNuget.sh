@@ -1,1 +1,0 @@
-msbuild /t:pack /p:Configuration=Release Ianua.Ianus.Client.Light.csproj

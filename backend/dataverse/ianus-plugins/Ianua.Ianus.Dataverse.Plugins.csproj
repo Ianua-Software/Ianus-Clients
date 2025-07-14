@@ -17,7 +17,7 @@
     https://docs.microsoft.com/en-us/nuget/reference/msbuild-targets
   -->
   <PropertyGroup>
-    <PackageId>Ianua.Ianus.Plugins</PackageId>
+    <PackageId>Ianua.Ianus.Dataverse.Plugins</PackageId>
     <Version>$(FileVersion)</Version>
     <Authors>Florian Kroenert</Authors>
     <Company>Ianua Software UG</Company>

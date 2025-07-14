@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>Ianua.Ianus.Client.Light</PackageId>
+    <PackageId>Ianua.Ianus.Dataverse.Client.Light</PackageId>
     <Version>1.0.3</Version>
     <Authors>Ianua Software UG</Authors>
     <Company>Ianua Software UG</Company>

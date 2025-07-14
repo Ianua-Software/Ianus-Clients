@@ -2,7 +2,7 @@ using System;
 using System.Text.Json;
 using Microsoft.Xrm.Sdk;
 
-namespace Ianua.Ianus.Client
+namespace Ianua.Ianus.Dataverse.Client
 {
     public class LicenseValidator
     {

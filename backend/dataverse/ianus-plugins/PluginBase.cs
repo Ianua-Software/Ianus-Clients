@@ -5,7 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
 
-namespace Ianua.Ianus.Plugins
+namespace Ianua.Ianus.Dataverse.Plugins
 {
     /// <summary>
     /// Base class for all plug-in classes.

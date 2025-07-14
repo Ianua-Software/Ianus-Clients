@@ -1,6 +1,6 @@
 using System;
 
-namespace Ianua.Ianus.Client
+namespace Ianua.Ianus.Dataverse.Client
 {
     public class IanusValidationRequest
     {

@@ -11,7 +11,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 using System.Collections.Generic;
 
-namespace Ianua.Ianus.Client
+namespace Ianua.Ianus.Dataverse.Client
 {
     public static class LicenseValidation
     {

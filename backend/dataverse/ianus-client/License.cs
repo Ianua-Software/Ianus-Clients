@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Ianua.Ianus.Client
+namespace Ianua.Ianus.Dataverse.Client
 {
     public class Meta
     {
