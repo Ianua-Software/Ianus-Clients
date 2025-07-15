@@ -15,7 +15,7 @@ export interface IIanusGuardProps {
     publisherId: string;
     productId: string;
     publicKeys: string[];
-    organizationId: string | ComponentFramework.PropertyTypes.DataSet;
+    organizationId: string | ComponentFramework.PropertyTypes.DataSet | ComponentFramework.WebApi;
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
     onLicenseValidated?: (result: LicenseValidationResult) => unknown;
 }
@@ -38,7 +38,7 @@ export const acquireLicenses = async (issuer: string, product: string, dataProvi
     else if (isDataset(dataProvider)) {
         return Object.values(dataProvider.records)
             .filter(r => r.getValue("ian_identifier") === licenseIdentifier)
-            .map(r => dataProvider.columns.reduce((all, cur) => ({...all, [cur.name]: r.getValue(cur.name)}), {} as ComponentFramework.WebApi.Entity))
+            .map(r => dataProvider.columns.reduce((all, cur) => ({...all, [cur.name]: r.getValue(cur.name)}), { ian_licenseid: r.getRecordId() } as ComponentFramework.WebApi.Entity))
     }
     else {
         throw new Error(`The 'dataProvider' prop must be either of type ComponentFramework.WebApi or ComponentFramework.PropertyTypes.Dataset. You passed '${typeof dataProvider}'.`)
@@ -73,6 +73,18 @@ const extractOrganizationIdFromDataset = (dataset: ComponentFramework.PropertyTy
     }
 
     return "";
+};
+
+const fetchOrganizationIdFromWebApi = async (webApi: ComponentFramework.WebApi) => {
+    const results = await webApi.retrieveMultipleRecords("organization", "?$top=1&$select=organizationid");
+
+    if (!results.entities.length)
+    {
+        return null;
+    }
+
+    const organization = results.entities[0];
+    return organization.organizationid;
 };
 
 export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys: publicKey, organizationId, dataProvider, onLicenseValidated, children }) => {
@@ -123,7 +135,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
 
             const resolvedOrganizationId = isDataset(organizationId)
             ? extractOrganizationIdFromDataset(organizationId)
-            : organizationId as string;
+            : ( isWebApi(organizationId) ? await fetchOrganizationIdFromWebApi(organizationId) : organizationId as string );
 
             const validationResult = await validateLicense(publisherId, productId, "dataverse", resolvedOrganizationId, publicKey, licenseRecord.ian_key);
 

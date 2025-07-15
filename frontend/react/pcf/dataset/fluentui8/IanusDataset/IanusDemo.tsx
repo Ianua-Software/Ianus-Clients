@@ -8,6 +8,7 @@ export interface IIanusDemoProps {
   publisherId: string;
   productId: string;
   publicKey: string;
+  fallbackPublicKey: string;
   organizationId: string | ComponentFramework.PropertyTypes.DataSet;
   dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,7 +20,7 @@ const IanusDemoApp: React.FC = () => {
 
   return (
     <>
-      <Label>
+      <Label style={{ textWrap: "wrap" }}>
         { `License check valid! Your protected content would render in this place. License Id: ${licenseState.license?.licenseId}` }
       </Label>
       <DefaultButton onClick={() => licenseDispatch({ type: "setLicenseDialogVisible", payload: true })}>Show license</DefaultButton>
@@ -27,13 +28,12 @@ const IanusDemoApp: React.FC = () => {
   );
 }
 
-
-export const IanusDemo: React.FC<IIanusDemoProps> = ({ publisherId, productId, publicKey, organizationId, dataProvider, onLicenseValidated }) => {
+export const IanusDemo: React.FC<IIanusDemoProps> = ({ publisherId, productId, publicKey, fallbackPublicKey, organizationId, dataProvider, onLicenseValidated }) => {
   return (
     <IanusProvider
       publisherId={publisherId}
       productId={productId}
-      publicKeys={[publicKey]}
+      publicKeys={[publicKey, fallbackPublicKey]}
       organizationId={organizationId}
       dataProvider={dataProvider}
       onLicenseValidated={onLicenseValidated}

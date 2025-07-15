@@ -23,6 +23,7 @@
     <property name="publisherId" display-name-key="Publisher Id" description-key="Publisher Id using which you publish your component. This is the External Id of your Ianus publisher. Copy it from Ianus portal on your publisher record." of-type="SingleLine.Text" usage="input" required="true" />
     <property name="productId" display-name-key="Product Id" description-key="Id of the product you want to license. This is the External Id of your Ianus product." of-type="SingleLine.Text" usage="input" required="true" />
     <property name="publicKey" display-name-key="Public Key" description-key="Your product and product version specific public key for verifying the license. This is the public key of the product version assigned to the product you want to license." of-type="Multiple" usage="input" required="true" />
+    <property name="fallbackPublicKey" display-name-key="Fallback Public Key" description-key="When using multiple product versions or dual signing with a customer generated license, set the appropriate public key in here. Leave empty otherwise." of-type="Multiple" usage="input" required="false" />
 
     <property name="isLicenseValid" display-name-key="Is License Valid" description-key="This returns the result of the license validation. If a valid license was found true, otherwise false" of-type="Whole.None" usage="output" required="false" />
 

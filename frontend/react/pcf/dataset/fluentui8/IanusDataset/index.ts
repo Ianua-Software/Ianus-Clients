@@ -43,7 +43,10 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
             publisherId: context.parameters.publisherId.raw ?? "",
             productId: context.parameters.productId.raw ?? "",
             publicKey: context.parameters.publicKey.raw ?? "",
-            organizationId: context.parameters.environmentInformationDataSet,
+            fallbackPublicKey: context.parameters.fallbackPublicKey.raw ?? "",
+            organizationId: context.parameters.organizationDataSet
+                ?? (context as unknown as { orgSettings: { attributes: { organizationid: string }}}).orgSettings.attributes.organizationid
+                ?? context.webAPI,
             dataProvider: context.parameters.licenseDataSet,
             onLicenseValidated: this.onLicenseValidated
         };

@@ -143,16 +143,35 @@ export const validateLicense = async (
 
         for( const publicKey of publicKeys )
         {
-            const key = await importRsaKey(publicKey);
-            const isLicenseSignatureValid = await verifySignature(key, dataToVerify, signatureToVerify);
-
-            if (isLicenseSignatureValid === true)
+            if ( publicKey )
             {
-                return {
-                    isValid: true,
-                    reason: "",
-                    license: claimsJson
-                };
+                let keyImportSuccess = false;
+                
+                try
+                {
+                    const key = await importRsaKey(publicKey);
+                    keyImportSuccess = true;
+
+                    const isLicenseSignatureValid = await verifySignature(key, dataToVerify, signatureToVerify);
+
+                    if (isLicenseSignatureValid === true)
+                    {
+                        return {
+                            isValid: true,
+                            reason: "",
+                            license: claimsJson
+                        };
+                    }
+                }
+                catch
+                {
+                    return {
+                        isValid: false,
+                        reason: keyImportSuccess
+                            ? "An error occured while verifying your license's signature"
+                            : "An error occured while importing your public key"
+                    };
+                }
             }
         }
 
