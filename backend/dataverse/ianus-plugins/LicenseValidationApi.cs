@@ -62,7 +62,14 @@ namespace Ianua.Ianus.Dataverse.Plugins
 
                         try
                         {
-                            var licenseValidationResult = LicenseValidation.ValidateLicense(publisherId, productId, new List<string> { publicKey }, licenseKey, localPluginContext.InitiatingUserService);
+                            var publicKeys = new List<string> { publicKey };
+
+                            if (localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("FallbackPublicKey", out string fallbackPublicKey) && !string.IsNullOrEmpty(fallbackPublicKey))
+                            {
+                                publicKeys.Add(fallbackPublicKey);
+                            }
+
+                            var licenseValidationResult = LicenseValidation.ValidateLicense(publisherId, productId, publicKeys, licenseKey, localPluginContext.InitiatingUserService);
 
                             localPluginContext.PluginExecutionContext.OutputParameters["IsLicenseValid"] = licenseValidationResult.IsValid;
                             localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = licenseValidationResult.Reason;

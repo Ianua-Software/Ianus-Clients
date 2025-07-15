@@ -12,9 +12,10 @@ namespace Ianua.Ianus.Dataverse.Client
             {
                 RequestName = "ian_LicenseValidation",
                 Parameters = {
-                    { "IsvId", request.IsvId },
+                    { "PublisherId", request.PublisherId },
                     { "ProductId", request.ProductId },
-                    { "PublicKey", request.PublicKey }
+                    { "PublicKey", request.PublicKey },
+                    { "FallbackPublicKey", request.FallbackPublicKey }
                 }
             };
 
