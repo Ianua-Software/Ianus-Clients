@@ -174,7 +174,7 @@ namespace Ianua.Ianus.Dataverse.Client
             };
         }
 
-        public static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, List<string> publicKeys, string licenseKey, IOrganizationService service)
+        public static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, IEnumerable<string> publicKeys, string licenseKey, IOrganizationService service)
         {
             if (string.IsNullOrEmpty(licenseKey))
             {

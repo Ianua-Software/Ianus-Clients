@@ -10,12 +10,11 @@ namespace Ianua.Ianus.Dataverse.Client
         {
             var customActionRequest = new OrganizationRequest
             {
-                RequestName = "ian_LicenseValidation",
+                RequestName = "ian_IanusLicenseValidation",
                 Parameters = {
                     { "PublisherId", request.PublisherId },
                     { "ProductId", request.ProductId },
-                    { "PublicKey", request.PublicKey },
-                    { "FallbackPublicKey", request.FallbackPublicKey }
+                    { "PublicKeys", request.PublicKeys }
                 }
             };
 

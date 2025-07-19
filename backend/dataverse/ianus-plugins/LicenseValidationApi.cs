@@ -29,30 +29,30 @@ namespace Ianua.Ianus.Dataverse.Plugins
                 throw new ArgumentNullException(nameof(localPluginContext));
             }
 
-            if (localPluginContext.PluginExecutionContext.MessageName.Equals("ian_LicenseValidation") && localPluginContext.PluginExecutionContext.Stage.Equals(30)) {
+            if (localPluginContext.PluginExecutionContext.MessageName.Equals("ian_IanusLicenseValidation") && localPluginContext.PluginExecutionContext.Stage.Equals(30)) {
 
                 try
                 {
-                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("PublisherId", out string publisher) || !Guid.TryParse(publisher, out Guid publisherId))
+                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("PublisherId", out Guid publisherId))
                     {
                         throw new InvalidPluginExecutionException("The input parameter 'PublisherId' is missing or not a valid guid!");
                     }
 
-                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("ProductId", out string product) || !Guid.TryParse(product, out Guid productId))
+                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("ProductId", out Guid productId))
                     {
                         throw new InvalidPluginExecutionException("The input parameter 'ProductId' is missing or empty!");
                     }
 
-                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("PublicKey", out string publicKey) || string.IsNullOrEmpty(publicKey))
+                    if (!localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("PublicKeys", out string[] publicKeys) || publicKeys == null || publicKeys.Length < 1)
                     {
-                        throw new InvalidPluginExecutionException("The input parameter 'PublicKey' is missing or empty!");
+                        throw new InvalidPluginExecutionException("The input parameter 'PublicKeys' is missing or empty!");
                     }
 
                     var license = RetrieveLicense(localPluginContext, publisherId, productId);
 
                     if (license == null)
                     {
-                        localPluginContext.PluginExecutionContext.OutputParameters["IsLicenseValid"] = false;
+                        localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = false;
                         localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = "No matching license found";
                         localPluginContext.PluginExecutionContext.OutputParameters["License"] = "";
                     }
@@ -62,22 +62,15 @@ namespace Ianua.Ianus.Dataverse.Plugins
 
                         try
                         {
-                            var publicKeys = new List<string> { publicKey };
-
-                            if (localPluginContext.PluginExecutionContext.InputParameters.TryGetValue("FallbackPublicKey", out string fallbackPublicKey) && !string.IsNullOrEmpty(fallbackPublicKey))
-                            {
-                                publicKeys.Add(fallbackPublicKey);
-                            }
-
                             var licenseValidationResult = LicenseValidation.ValidateLicense(publisherId, productId, publicKeys, licenseKey, localPluginContext.InitiatingUserService);
 
-                            localPluginContext.PluginExecutionContext.OutputParameters["IsLicenseValid"] = licenseValidationResult.IsValid;
+                            localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = licenseValidationResult.IsValid;
                             localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = licenseValidationResult.Reason;
                             localPluginContext.PluginExecutionContext.OutputParameters["License"] = licenseValidationResult.IsValid ? JsonSerializer.Serialize(licenseValidationResult.License) : "";
                         }
                         catch(Exception ex)
                         {
-                            localPluginContext.PluginExecutionContext.OutputParameters["IsLicenseValid"] = false;
+                            localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = false;
                             localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = ex.Message;
                             localPluginContext.PluginExecutionContext.OutputParameters["License"] = "";
                         }

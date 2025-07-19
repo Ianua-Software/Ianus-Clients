@@ -6,7 +6,6 @@ namespace Ianua.Ianus.Dataverse.Client
     {
         public Guid PublisherId { get; set; }
         public Guid ProductId { get; set; }
-        public string PublicKey { get; set; }
-        public string FallbackPublicKey { get; set; }
+        public IEnumerable<string> PublicKeys { get; set; }
     }
 }
