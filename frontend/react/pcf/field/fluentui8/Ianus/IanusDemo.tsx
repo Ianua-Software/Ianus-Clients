@@ -3,6 +3,7 @@ import { DefaultButton, Text } from '@fluentui/react';
 import { IanusProvider } from "../../../../react-core/fluentui8/src/IanusProvider";
 import { IInputs } from './generated/ManifestTypes';
 import { useLicenseContext } from '../../../../react-core/fluentui8/src/IanusLicenseStateProvider';
+import { LicenseValidationResult } from '../../../../../ianus-core/LicenseValidationResult';
 
 export interface IIanusDemoProps {
   publisherId: string;
@@ -11,6 +12,8 @@ export interface IIanusDemoProps {
   fallbackPublicKey: string;
   organizationId: string;
   dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onLicenseValidated?: (result: LicenseValidationResult) => any
 }
 
 const IanusDemoApp: React.FC = () => {
@@ -26,7 +29,7 @@ const IanusDemoApp: React.FC = () => {
   );
 }
 
-export const IanusDemo: React.FC<IIanusDemoProps> = ({ publisherId, productId, publicKey, fallbackPublicKey, organizationId, dataProvider }) => {
+export const IanusDemo: React.FC<IIanusDemoProps> = ({ publisherId, productId, publicKey, fallbackPublicKey, organizationId, dataProvider, onLicenseValidated }) => {
   return (
     <IanusProvider
       publisherId={publisherId}
@@ -34,6 +37,7 @@ export const IanusDemo: React.FC<IIanusDemoProps> = ({ publisherId, productId, p
       publicKeys={[publicKey, fallbackPublicKey]}
       organizationId={organizationId}
       dataProvider={dataProvider}
+      onLicenseValidated={onLicenseValidated}
     >
       <IanusDemoApp />
     </IanusProvider>

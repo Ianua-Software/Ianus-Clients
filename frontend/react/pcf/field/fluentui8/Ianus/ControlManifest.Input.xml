@@ -25,7 +25,7 @@
     <property name="publicKey" display-name-key="Public Key" description-key="Your product and product version specific public key for verifying the license. This is the public key of the product version assigned to the product you want to license." of-type="Multiple" usage="input" required="true" />
     <property name="fallbackPublicKey" display-name-key="Fallback Public Key" description-key="When using multiple product versions or dual signing with a customer generated license, set the appropriate public key in here. Leave empty otherwise." of-type="Multiple" usage="input" required="false" />
 
-    <property name="isLicenseValid" display-name-key="Is License Valid" description-key="This returns the result of the license validation. If a valid license was found true, otherwise false" of-type="Whole.None" usage="output" required="false" />
+    <property name="isValid" display-name-key="Is Valid" description-key="This returns the result of the license validation. If a valid license was found true, otherwise false" of-type="Whole.None" usage="output" required="false" />
 
     <!--
       Property node's of-type attribute can be of-type-group attribute.

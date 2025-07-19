@@ -1,3 +1,4 @@
+import { LicenseValidationResult } from "../../../../../ianus-core/LicenseValidationResult";
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { IanusDemo, IIanusDemoProps } from "./IanusDemo";
 import * as React from "react";
@@ -5,7 +6,7 @@ import * as React from "react";
 export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs> {
     private theComponent: ComponentFramework.ReactControl<IInputs, IOutputs>;
     private notifyOutputChanged: () => void;
-    private isLicenseValid = 0;
+    private isValid = 0;
 
     /**
      * Empty constructor.
@@ -27,6 +28,11 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
         this.notifyOutputChanged = notifyOutputChanged;
     }
 
+    private onLicenseValidated = ( result: LicenseValidationResult ): void => {
+        this.isValid = result.isValid ? 1 : 0;
+        this.notifyOutputChanged();
+    };
+
     /**
      * Called when any value in the property bag has changed. This includes field values, data-sets, global values such as container height and width, offline status, control metadata values such as label, visible, etc.
      * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
@@ -39,7 +45,8 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
             publicKey: context.parameters.publicKey.raw ?? "",
             fallbackPublicKey: context.parameters.fallbackPublicKey.raw ?? "",
             organizationId: (context as unknown as { orgSettings: { attributes: { organizationid: string }}}).orgSettings.attributes.organizationid ?? context.webAPI,
-            dataProvider: context.webAPI
+            dataProvider: context.webAPI,
+            onLicenseValidated: this.onLicenseValidated
         };
 
         return React.createElement(
@@ -53,7 +60,7 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
      */
     public getOutputs(): IOutputs {
         return {
-            isLicenseValid: this.isLicenseValid
+            isValid: this.isValid
         };
     }
 
