@@ -94,7 +94,7 @@ namespace Ianua.Ianus.Dataverse.Plugins
             {
                 var alternateKey = new KeyAttributeCollection
                 {
-                    { "ian_identifier", $"{publisherId}-{productId}" }
+                    { "ian_identifier", $"{publisherId}_{productId}" }
                 };
 
                 var entityRef = new EntityReference("ian_license", alternateKey);

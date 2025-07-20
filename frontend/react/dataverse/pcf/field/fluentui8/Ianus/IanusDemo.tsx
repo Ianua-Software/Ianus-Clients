@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { DefaultButton, Text } from '@fluentui/react';
-import { IanusProvider } from "../../../../react-core/fluentui8/src/IanusProvider";
+import { IanusProvider } from "../../../../../react-core/fluentui8/src/IanusProvider";
 import { IInputs } from './generated/ManifestTypes';
-import { useLicenseContext } from '../../../../react-core/fluentui8/src/IanusLicenseStateProvider';
-import { LicenseValidationResult } from '../../../../../ianus-core/LicenseValidationResult';
+import { useLicenseContext } from '../../../../../react-core/fluentui8/src/IanusLicenseStateProvider';
+import { LicenseValidationResult } from '../../../../../../ianus-core/LicenseValidationResult';
 
 export interface IIanusDemoProps {
   publisherId: string;

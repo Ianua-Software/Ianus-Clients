@@ -12,6 +12,7 @@ import {
 
 import { useLicenseContext } from './IanusLicenseStateProvider';
 import { acquireLicenses, isDataset, isWebApi } from './IanusGuard';
+import { ILicense } from "../../../../ianus-core/License";
 
 const modalProps = {
     isBlocking: false,
@@ -70,13 +71,13 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
 
         try
         {
-            const parsedJson = JSON.parse(atob(body)) as Record<string, string>;
+            const parsedJson = JSON.parse(atob(body)) as ILicense;
 
-            if (parsedJson && parsedJson.iss_name && parsedJson.aud_name)
+            if (parsedJson?.pub_meta?.name && parsedJson.prd_meta?.name)
             {
                 return {
-                    issuer: parsedJson.iss_name,
-                    product: parsedJson.aud_name
+                    publisher: parsedJson.pub_meta.name,
+                    product: parsedJson.prd_meta.name
                 };
             }
             else
@@ -92,8 +93,8 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
 
     const onSubmitClick = async () => {
         const displayNames = tryToExtractDisplayNames(licenseKeyInput);
-        const name = `${displayNames?.issuer ?? publisherId}-${displayNames?.product ?? productId}`;
-        const identifier = `${publisherId}-${productId}`;
+        const name = `${displayNames?.publisher ?? publisherId} - ${displayNames?.product ?? productId}`;
+        const identifier = `${publisherId}_${productId}`;
 
         if (licenseId) {
             if (isWebApi(dataProvider)) {

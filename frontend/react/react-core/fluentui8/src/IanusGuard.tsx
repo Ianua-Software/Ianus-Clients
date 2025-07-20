@@ -28,8 +28,8 @@ export const isDataset = (dataProvider: ComponentFramework.WebApi | ComponentFra
     return (dataProvider as ComponentFramework.PropertyTypes.DataSet).records !== undefined;
 };
 
-export const acquireLicenses = async (issuer: string, product: string, dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet): Promise<ComponentFramework.WebApi.Entity[]> => {
-    const licenseIdentifier = `${issuer}-${product}`
+export const acquireLicenses = async (publisherId: string, productId: string, dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet): Promise<ComponentFramework.WebApi.Entity[]> => {
+    const licenseIdentifier = `${publisherId}_${productId}`
 
     if (isWebApi(dataProvider)) {
         const response = await dataProvider.retrieveMultipleRecords("ian_license", `?$filter=ian_identifier eq '${licenseIdentifier}' and statecode eq 0`);
@@ -124,10 +124,10 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
             }
 
             if (licenses.length > 1) {
-                licenseDispatch({ type: "setLicenseError", payload: `Multiple active licenses for '${publisherId}-${productId}' found, please make sure there is only one active license` });
+                licenseDispatch({ type: "setLicenseError", payload: `Multiple active licenses for '${publisherId}_${productId}' found, please make sure there is only one active license` });
                 return {
                     isValid: false,
-                    reason: `Multiple active licenses for '${publisherId}-${productId}' found, please make sure there is only one active license`
+                    reason: `Multiple active licenses for '${publisherId}_${productId}' found, please make sure there is only one active license`
                 };
             }
 

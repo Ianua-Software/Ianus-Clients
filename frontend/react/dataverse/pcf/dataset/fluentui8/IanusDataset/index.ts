@@ -1,12 +1,15 @@
-import { LicenseValidationResult } from "../../../../../ianus-core/LicenseValidationResult";
+import { ILicense } from "../../../../../../ianus-core/License";
+import { LicenseValidationResult } from "../../../../../../ianus-core/LicenseValidationResult";
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { IanusDemo, IIanusDemoProps } from "./IanusDemo";
 import * as React from "react";
 
-export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs> {
+export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IOutputs> {
     private theComponent: ComponentFramework.ReactControl<IInputs, IOutputs>;
     private notifyOutputChanged: () => void;
     private isValid = 0;
+    private reason = "";
+    private license: ILicense | null = null;
 
     /**
      * Empty constructor.
@@ -30,6 +33,9 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
 
     private onLicenseValidated = ( result: LicenseValidationResult ): void => {
         this.isValid = result.isValid ? 1 : 0;
+        this.reason = result.reason;
+        this.license = result.license ?? null;
+
         this.notifyOutputChanged();
     };
 
@@ -44,8 +50,10 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
             productId: context.parameters.productId.raw ?? "",
             publicKey: context.parameters.publicKey.raw ?? "",
             fallbackPublicKey: context.parameters.fallbackPublicKey.raw ?? "",
-            organizationId: (context as unknown as { orgSettings: { attributes: { organizationid: string }}}).orgSettings.attributes.organizationid ?? context.webAPI,
-            dataProvider: context.webAPI,
+            organizationId: context.parameters.organizationDataSet
+                ?? (context as unknown as { orgSettings: { attributes: { organizationid: string }}}).orgSettings.attributes.organizationid
+                ?? context.webAPI,
+            dataProvider: context.parameters.licenseDataSet,
             onLicenseValidated: this.onLicenseValidated
         };
 
@@ -60,7 +68,9 @@ export class Ianus implements ComponentFramework.ReactControl<IInputs, IOutputs>
      */
     public getOutputs(): IOutputs {
         return {
-            isValid: this.isValid
+            isValid: this.isValid,
+            reason: this.reason,
+            licenseJson: this.license ? JSON.stringify(this.license) : ""
         };
     }
 

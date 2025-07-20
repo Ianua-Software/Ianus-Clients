@@ -77,7 +77,7 @@ namespace Ianua.Ianus.Dataverse.Client
             return results.EntityCollection.Entities.FirstOrDefault()?.Id ?? Guid.Empty;
         }
 
-        public static LicenseValidationResult ValidateClaims
+        private static LicenseValidationResult ValidateClaims
         (
             Guid publisherId, 
             Guid productId, 
