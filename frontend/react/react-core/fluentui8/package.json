@@ -1,7 +1,7 @@
 {
   "name": "@ianua/ianus-dataverse-react-fluentui8",
-  "version": "1.0.0",
-  "description": "Project containing your PowerApps Component Framework (PCF) control.",
+  "version": "1.0.4",
+  "description": "Client-side validation for Ianus Guard licenses in Dataverse using react and FluentUi v8",
   "scripts": {
     "build": "tsup"
   },
