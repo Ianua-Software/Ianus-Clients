@@ -13,6 +13,7 @@ import {
 import { useLicenseContext } from './IanusLicenseStateProvider';
 import { acquireLicenses, isDataset, isWebApi } from './IanusGuard';
 import { ILicense } from "../../../../ianus-core/License";
+import { base64url_decode } from '../../../../ianus-core/LicenseValidation';
 
 const modalProps = {
     isBlocking: false,
@@ -71,13 +72,14 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
 
         try
         {
-            const parsedJson = JSON.parse(atob(body)) as ILicense;
+            const plainClaims = new TextDecoder("utf-8").decode(base64url_decode(body));
+            const claimsJson = JSON.parse(plainClaims);
 
-            if (parsedJson?.pub_meta?.name && parsedJson.prd_meta?.name)
+            if (claimsJson?.pub_meta?.name && claimsJson.prd_meta?.name)
             {
                 return {
-                    publisher: parsedJson.pub_meta.name,
-                    product: parsedJson.prd_meta.name
+                    publisher: claimsJson.pub_meta.name,
+                    product: claimsJson.prd_meta.name
                 };
             }
             else

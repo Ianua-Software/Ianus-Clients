@@ -50,10 +50,16 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
             productId: context.parameters.productId.raw ?? "",
             publicKey: context.parameters.publicKey.raw ?? "",
             fallbackPublicKey: context.parameters.fallbackPublicKey.raw ?? "",
+            // We use organization dataset if possible. As fallback, we first try to get it from pcfContext and as last resort fetch via webAPI
             organizationId: context.parameters.organizationDataSet
                 ?? (context as unknown as { orgSettings: { attributes: { organizationid: string }}}).orgSettings.attributes.organizationid
                 ?? context.webAPI,
-            dataProvider: context.parameters.licenseDataSet,
+            // We may only pass the dataset as dataProvider, if it will also be capable of creating new records (for setting a license first time)
+            // This works only in canvas apps at the time of writing
+            // Otherwise, pass webAPI
+            dataProvider: context.parameters.licenseDataSet && ( context.parameters.licenseDataSet as any ).newRecord
+                ? context.parameters.licenseDataSet
+                : context.webAPI,
             onLicenseValidated: this.onLicenseValidated
         };
 

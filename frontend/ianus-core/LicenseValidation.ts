@@ -80,7 +80,7 @@ const validateClaims = (publisherId: string, productId: string, environmentType:
 };
 
 // Helper for Base64url encoding, from: https://thewoods.blog/base64url/
-const base64url_decode = (value: string): ArrayBuffer => {
+export const base64url_decode = (value: string): ArrayBuffer => {
     const m = value.length % 4;
     return Uint8Array.from(atob(
         value.replace(/-/g, '+')
