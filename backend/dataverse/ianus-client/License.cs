@@ -67,8 +67,11 @@ namespace Ianua.Ianus.Dataverse.Client
         [JsonPropertyName("aud_meta")]
         public Meta AudMeta { get; set; }
 
-        [JsonPropertyName("isv_meta")]
-        public Meta IsvMeta { get; set; }
+        [JsonPropertyName("pub_meta")]
+        public Meta PubMeta { get; set; }
+
+        [JsonPropertyName("prd_meta")]
+        public Meta PrdMeta { get; set; }
 
         [JsonPropertyName("sub_meta")]
         public Meta SubMeta { get; set; }
