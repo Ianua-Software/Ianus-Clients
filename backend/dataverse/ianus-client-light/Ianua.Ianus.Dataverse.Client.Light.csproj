@@ -6,16 +6,21 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- NuGet package metadata -->
     <PackageId>Ianua.Ianus.Dataverse.Client.Light</PackageId>
-    <Version>1.0.3</Version>
-    <Authors>Ianua Software UG</Authors>
-    <Company>Ianua Software UG</Company>
-    <Description>.NET client for validating Ianus licenses inside non nuget plugins</Description>
+    <Version>1.0.0</Version>
+    <Authors>Ianua Software</Authors>
+    <Company>Ianua Software</Company>
+    <Description>.NET client for validating Ianus Guard licenses inside pluginassembly plugins</Description>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/Ianua-Software/Ianus-Clients</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://www.ianusguard.com</PackageProjectUrl>
     <PackageOutputPath>bin\Release</PackageOutputPath>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageIcon>icon.png</PackageIcon>
+    <Copyright>Ianua Software</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\"/>
+    <None Include="icon.png" Pack="true" PackagePath="\"/>
     <Compile Remove="**\*.cs" />
   </ItemGroup>
 
@@ -36,7 +43,6 @@
     <!-- Files for legacy projects -->
     <Content Include="IanusValidationRequest.cs" Pack="true" PackagePath="content/" BuildAction="None" />
     <Content Include="../ianus-client/License.cs" Pack="true" PackagePath="content/" BuildAction="None" />
-    <Content Include="LicenseValidation.cs" Pack="true" PackagePath="content/" BuildAction="None" />
     <Content Include="LicenseValidator.cs" Pack="true" PackagePath="content/" BuildAction="None" />
   </ItemGroup>
 

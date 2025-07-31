@@ -20,7 +20,7 @@
     <PackageId>Ianua.Ianus.Dataverse.Plugins</PackageId>
     <Version>$(FileVersion)</Version>
     <Authors>Florian Kroenert</Authors>
-    <Company>Ianua Software UG</Company>
+    <Company>Ianua Software</Company>
     <Description>Plugin Services for the Ianua Ianus Component</Description>
   </PropertyGroup>
 

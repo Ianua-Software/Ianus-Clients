@@ -48,71 +48,22 @@ namespace Ianua.Ianus.Dataverse.Plugins
                         throw new InvalidPluginExecutionException("The input parameter 'PublicKeys' is missing or empty!");
                     }
 
-                    var license = RetrieveLicense(localPluginContext, publisherId, productId);
+                    var licenseValidationResult = LicenseValidation.ValidateLicense(publisherId, productId, publicKeys, localPluginContext.InitiatingUserService);
 
-                    if (license == null)
-                    {
-                        localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = false;
-                        localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = "No matching license found";
-                        localPluginContext.PluginExecutionContext.OutputParameters["License"] = "";
-                    }
-                    else
-                    {
-                        var licenseKey = license.GetAttributeValue<string>("ian_key");
-
-                        try
-                        {
-                            var licenseValidationResult = LicenseValidation.ValidateLicense(publisherId, productId, publicKeys, licenseKey, localPluginContext.InitiatingUserService);
-
-                            localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = licenseValidationResult.IsValid;
-                            localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = licenseValidationResult.Reason;
-                            localPluginContext.PluginExecutionContext.OutputParameters["License"] = licenseValidationResult.IsValid ? JsonSerializer.Serialize(licenseValidationResult.License) : "";
-                        }
-                        catch(Exception ex)
-                        {
-                            localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = false;
-                            localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = ex.Message;
-                            localPluginContext.PluginExecutionContext.OutputParameters["License"] = "";
-                        }
-                    }
+                    localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = licenseValidationResult.IsValid;
+                    localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = licenseValidationResult.Reason;
+                    localPluginContext.PluginExecutionContext.OutputParameters["License"] = licenseValidationResult.IsValid ? JsonSerializer.Serialize(licenseValidationResult.License) : "";
                 }
                 catch (Exception ex)
                 {
-                    localPluginContext.Trace("ian_LicenseValidation: {0}", ex.StackTrace.ToString());
-                    throw new InvalidPluginExecutionException("An error occurred in ian_LicenseValidation.", ex);
+                    localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = false;
+                    localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = ex.Message;
+                    localPluginContext.PluginExecutionContext.OutputParameters["License"] = "";
                 }
             }
             else
             {
-                throw new InvalidPluginExecutionException("ian_LicenseValidation plug-in is not associated with the expected message or is not registered for the main operation.");
-            }
-        }
-
-        private static Entity RetrieveLicense(ILocalPluginContext localPluginContext, Guid publisherId, Guid productId)
-        {
-            try
-            {
-                var alternateKey = new KeyAttributeCollection
-                {
-                    { "ian_identifier", $"{publisherId}_{productId}" }
-                };
-
-                var entityRef = new EntityReference("ian_license", alternateKey);
-
-                var retrieveRequest = new RetrieveRequest
-                {
-                    Target = entityRef,
-                    ColumnSet = new ColumnSet("ian_identifier", "ian_key")
-                };
-
-                var retrieveResponse = (RetrieveResponse) localPluginContext.InitiatingUserService.Execute(retrieveRequest);
-                var retrievedEntity = retrieveResponse.Entity;
-
-                return retrievedEntity;
-            }
-            catch
-            {
-                return null;
+                throw new InvalidPluginExecutionException("ian_IanusLicenseValidation plug-in is not associated with the expected message or is not registered for the main operation.");
             }
         }
     }

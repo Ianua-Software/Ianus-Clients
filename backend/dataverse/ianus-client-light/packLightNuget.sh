@@ -1,1 +1,1 @@
-msbuild /t:pack /p:Configuration=Release Ianua.Ianus.Dataverse.Client.Light.csproj
+dotnet build /t:pack /p:Configuration=Release Ianua.Ianus.Dataverse.Client.Light.csproj

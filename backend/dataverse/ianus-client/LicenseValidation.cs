@@ -174,7 +174,51 @@ namespace Ianua.Ianus.Dataverse.Client
             };
         }
 
-        public static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, IEnumerable<string> publicKeys, string licenseKey, IOrganizationService service)
+        public static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, IEnumerable<string> publicKeys, IOrganizationService service)
+        {
+            try
+            {
+                var alternateKey = new KeyAttributeCollection
+                {
+                    { "ian_identifier", $"{publisherId}_{productId}" }
+                };
+
+                var entityRef = new EntityReference("ian_license", alternateKey);
+
+                var retrieveRequest = new RetrieveRequest
+                {
+                    Target = entityRef,
+                    ColumnSet = new ColumnSet("ian_identifier", "ian_key")
+                };
+
+                var retrieveResponse = (RetrieveResponse) service.Execute(retrieveRequest);
+                var retrievedEntity = retrieveResponse.Entity;
+
+                if (retrievedEntity != null)
+                {
+                    var licenseKey = retrievedEntity.GetAttributeValue<string>("ian_key");
+                    return ValidateLicense(publisherId, productId, publicKeys, licenseKey, service);
+                }
+                else
+                {
+                    return new LicenseValidationResult
+                    {
+                        IsValid = false,
+                        Reason = "No license found!"
+                    };
+                }
+            }
+            catch
+            {
+                return new LicenseValidationResult
+                {
+                    IsValid = false,
+                    Reason = "No license found!"
+                };
+            }
+        }
+
+        private static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, IEnumerable<string> publicKeys, string licenseKey, IOrganizationService service)
         {
             if (string.IsNullOrEmpty(licenseKey))
             {
