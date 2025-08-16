@@ -11,13 +11,52 @@ import { LicenseDialog } from './LicenseDialog';
 import { useLicenseContext } from './IanusLicenseStateProvider';
 import { DataverseLicenseValidationResult } from './DataverseLicenseValidationResult';
 
+export type EnvironmentType = "entra" | "dataverse";
+
 export interface IIanusGuardProps {
+    /**
+     * The external publisher Guid found on the publisher's Ianus Guard portal form
+     */
     publisherId: string;
+
+    /**
+     * The external product Guid found on the product's Ianus Guard portal form
+     */
     productId: string;
+
+    /**
+     * One or multiple public keys, found on the product's Ianus Guard portal form or your own generated public key
+     */
     publicKeys: string[];
-    environmentType: string;
+
+    /**
+     * Type of environment you're currently evaluating against
+     */
+    environmentType: EnvironmentType;
+
+    /**
+     * Identifier for the current environment. For entra this is the Tenant ID, for dataverse this is the Organization ID. For dataverse you can pass the WebApi object to fetch it automatically
+     */
     environmentIdentifier: string | ComponentFramework.WebApi;
+
+    /**
+     * Data provider for retrieving licenses in the current environment. Either a dataset or the WebApi object
+     */
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
+
+    /**
+     * When using user-based licensing, usage permission is derived by having read permission to a defined 'usage-entity'. Pass the result of the license check here, if read is allowed, pass true, otherwise false.
+     * Pass null while you're fetching the permission.
+     * For canvas apps, use the DataSourceInfo PowerFX function, for PCFs use pcfContext.utils.getEntityMetadata for loading the metadata followed by pcfContext.utils.hasEntityPrivilege for getting the permission result.
+     */
+    usagePermission?: boolean | null;
+
+    /**
+     * Optionally pass a callback which is called when a license validation result was generated
+     * 
+     * @param result The result of this validation run
+     * @returns Returned data will not be processed in any way
+     */
     onLicenseValidated?: (result: LicenseValidationResult) => unknown;
 }
 
@@ -80,7 +119,7 @@ const fetchOrganizationIdFromWebApi = async (webApi: ComponentFramework.WebApi) 
     return organization.organizationid;
 };
 
-export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys, environmentType, environmentIdentifier, dataProvider, onLicenseValidated, children }) => {
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys, environmentType, environmentIdentifier, dataProvider, usagePermission, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
     const onSettingsFinally = () => {
@@ -152,7 +191,18 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
     }, [licenseDispatch, onLicenseValidated, runValidation]);
 
     React.useEffect(() => {
-        if (!isDataset(dataProvider) || (!dataProvider.error && !dataProvider.loading && dataProvider.paging.totalResultCount >= 0))
+        if ( usagePermission != null && !usagePermission )
+        {
+            const result: LicenseValidationResult = {
+                isValid: false,
+                isTerminalError: true,
+                reason: "Your user is not enabled for using this product"
+            };
+
+            licenseDispatch({ type: "setLicense", payload: result });
+            updateResultIfDefined(result, onLicenseValidated);
+        }
+        else if (!isDataset(dataProvider) || (!dataProvider.error && !dataProvider.loading && dataProvider.paging.totalResultCount >= 0))
         {
             initLicenseValidation();
         }
@@ -167,7 +217,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
             licenseDispatch({ type: "setLicense", payload: result });
             updateResultIfDefined(result, onLicenseValidated);
         }
-    }, [dataProvider, initLicenseValidation, licenseDispatch, onLicenseValidated]);
+    }, [dataProvider, initLicenseValidation, licenseDispatch, usagePermission, onLicenseValidated]);
 
     return licenseState.license?.isValid
         ? ( <>

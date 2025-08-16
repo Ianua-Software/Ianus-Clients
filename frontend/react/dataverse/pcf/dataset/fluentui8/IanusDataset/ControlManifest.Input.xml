@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="Ianua" constructor="IanusDataset" version="1.0.1" display-name-key="Ianus Guard Dataset" description-key="Ianus Guard for datasets" control-type="virtual" >
+  <control namespace="Ianua" constructor="IanusDataset" version="1.0.2" display-name-key="Ianus Guard Dataset" description-key="Ianus Guard for datasets" control-type="virtual" >
     <!--external-service-usage node declares whether this 3rd party PCF control is using external service or not, if yes, this control will be considered as premium and please also add the external domain it is using.
     If it is not using any external service, please set the enabled="false" and DO NOT add any domain below. The "enabled" will be false by default.
     Example1:
@@ -24,6 +24,8 @@
     <property name="productId" display-name-key="Product Id" description-key="Id of the product you want to license. This is the External Id of your Ianus product." of-type="SingleLine.Text" usage="input" required="true" />
     <property name="publicKey" display-name-key="Public Key" description-key="Your product and product version specific public key for verifying the license. This is the public key of the product version assigned to the product you want to license." of-type="Multiple" usage="input" required="true" />
     <property name="fallbackPublicKey" display-name-key="Fallback Public Key" description-key="When using multiple product versions or dual signing with a customer generated license, set the appropriate public key in here. Leave empty otherwise." of-type="Multiple" usage="input" required="false" />
+
+    <property name="usagePermissionEntity" display-name-key="Usage Permission Entity" description-key="For user-based licensing, you can define Usage Permissions. Usage permission is defined by the user having read access to a special entity defined by you. If you want to use this, set it to the logical name of your permission entity. Set to blank or leave empty otherwise." of-type="SingleLine.Text" usage="input" required="false" />
 
     <property name="isValid" display-name-key="Is Valid" description-key="This returns the result of the license validation. If a valid license was found true, otherwise false" of-type="Whole.None" usage="output" required="false" />
     <property name="reason" display-name-key="Reason" description-key="This returns the result text of the license validation. If a valid license was found it is empty, otherwise you get a rejection reason" of-type="SingleLine.Text" usage="output" required="false" />

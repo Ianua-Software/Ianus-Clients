@@ -3,15 +3,17 @@ import { DefaultButton, Label } from '@fluentui/react';
 import { IanusProvider } from "../../../../react-core/fluentui8/src/IanusProvider";
 import { useLicenseContext } from '../../../../react-core/fluentui8/src/IanusLicenseStateProvider';
 import { LicenseValidationResult } from '../../../../../../ianus-core/LicenseValidationResult';
+import { EnvironmentType } from '../../../../react-core/fluentui8/src/IanusGuard';
 
 export interface IIanusCanvasAppProps {
   publisherId: string;
   productId: string;
   publicKey: string;
   fallbackPublicKey: string;
-  environmentType: string;
+  environmentType: EnvironmentType;
   environmentIdentifier: string;
   dataProvider: ComponentFramework.PropertyTypes.DataSet;
+  usagePermission?: boolean | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLicenseValidated?: (result: LicenseValidationResult) => any
 }
@@ -22,14 +24,14 @@ const IanusCanvasContent: React.FC = () => {
   return (
     <>
       <Label style={{ textWrap: "wrap" }}>
-        { `License check valid! Your protected content would render in this place. License Id: ${licenseState.license?.licenseId}` }
+        { `License check valid! License Id: ${licenseState.license?.licenseId}` }
       </Label>
       <DefaultButton onClick={() => licenseDispatch({ type: "setLicenseDialogVisible", payload: true })}>Show license</DefaultButton>
     </>
   );
 }
 
-export const IanusCanvasApp: React.FC<IIanusCanvasAppProps> = ({ publisherId, productId, publicKey, fallbackPublicKey, environmentType, environmentIdentifier, dataProvider, onLicenseValidated }) => {
+export const IanusCanvasApp: React.FC<IIanusCanvasAppProps> = ({ publisherId, productId, publicKey, fallbackPublicKey, environmentType, environmentIdentifier, dataProvider, usagePermission, onLicenseValidated }) => {
   return (
     <IanusProvider
       publisherId={publisherId}
@@ -38,6 +40,7 @@ export const IanusCanvasApp: React.FC<IIanusCanvasAppProps> = ({ publisherId, pr
       environmentType={environmentType}
       environmentIdentifier={environmentIdentifier}
       dataProvider={dataProvider}
+      usagePermission={usagePermission}
       onLicenseValidated={onLicenseValidated}
     >
       <IanusCanvasContent />

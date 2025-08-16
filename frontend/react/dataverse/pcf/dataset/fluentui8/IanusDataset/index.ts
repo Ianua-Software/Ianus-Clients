@@ -10,6 +10,7 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
     private isValid = 0;
     private reason = "";
     private license: ILicenseClaims | null = null;
+    private usagePermission: boolean | null = null;
 
     /**
      * Empty constructor.
@@ -29,6 +30,20 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
         state: ComponentFramework.Dictionary
     ): void {
         this.notifyOutputChanged = notifyOutputChanged;
+
+        if (context.parameters.usagePermissionEntity?.raw)
+        {
+            context.utils.getEntityMetadata(context.parameters.usagePermissionEntity.raw)
+            .then(() =>
+            {
+                this.usagePermission = context.utils.hasEntityPrivilege(context.parameters.usagePermissionEntity.raw!, 2, 0)
+            })
+            .finally(this.notifyOutputChanged);
+        }
+        else
+        {
+            this.usagePermission = true;
+        }
     }
 
     private onLicenseValidated = ( result: LicenseValidationResult ): void => {
@@ -54,6 +69,8 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
      * @returns ReactElement root react element for the control
      */
     public updateView(context: ComponentFramework.Context<IInputs>): React.ReactElement {
+        const usagePermission = this.usagePermission;
+
         const props: IIanusDatasetAppProps = {
             publisherId: context.parameters.publisherId.raw ?? "",
             productId: context.parameters.productId.raw ?? "",
@@ -67,6 +84,7 @@ export class IanusDataset implements ComponentFramework.ReactControl<IInputs, IO
             // Datasets are only capable of creating new records (for setting a license first time) in canvas apps at the time of writing
             // As this pcf targets model-driven apps, we pass webAPI instead
             dataProvider: context.webAPI,
+            usagePermission: usagePermission,
             onLicenseValidated: this.onLicenseValidated
         };
 
