@@ -174,7 +174,7 @@ namespace Ianua.Ianus.Dataverse.Client
             };
         }
 
-        public static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, IEnumerable<string> publicKeys, IOrganizationService service)
+        public static Entity RetrieveLicense(Guid publisherId, Guid productId, IOrganizationService service)
         {
             try
             {
@@ -188,15 +188,29 @@ namespace Ianua.Ianus.Dataverse.Client
                 var retrieveRequest = new RetrieveRequest
                 {
                     Target = entityRef,
-                    ColumnSet = new ColumnSet("ian_identifier", "ian_key")
+                    ColumnSet = new ColumnSet("ian_identifier", "ian_key", "ian_lasttelemetrysubmissiondate")
                 };
 
-                var retrieveResponse = (RetrieveResponse) service.Execute(retrieveRequest);
+                var retrieveResponse = (RetrieveResponse)service.Execute(retrieveRequest);
                 var retrievedEntity = retrieveResponse.Entity;
 
-                if (retrievedEntity != null)
+                return retrievedEntity;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, IEnumerable<string> publicKeys, IOrganizationService service)
+        {
+            try
+            {
+                var license = RetrieveLicense(publisherId, productId, service);
+
+                if (license != null)
                 {
-                    var licenseKey = retrievedEntity.GetAttributeValue<string>("ian_key");
+                    var licenseKey = license.GetAttributeValue<string>("ian_key");
                     return ValidateLicense(publisherId, productId, publicKeys, licenseKey, service);
                 }
                 else

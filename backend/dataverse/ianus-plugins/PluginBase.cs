@@ -92,6 +92,11 @@ namespace Ianua.Ianus.Dataverse.Plugins
         IOrganizationService PluginUserService { get; }
 
         /// <summary>
+        /// The PowerPlatform Dataverse organization service for SYSTEM (disabled) user
+        /// </summary>
+        IOrganizationService RootService { get; }
+
+        /// <summary>
         /// IPluginExecutionContext contains information that describes the run-time environment in which the plug-in executes, information related to the execution pipeline, and entity business information.
         /// </summary>
         IPluginExecutionContext PluginExecutionContext { get; }
@@ -143,6 +148,11 @@ namespace Ianua.Ianus.Dataverse.Plugins
         /// The PowerPlatform Dataverse organization service for the Account that was registered to run this plugin, This could be the same user as InitiatingUserService.
         /// </summary>
         public IOrganizationService PluginUserService { get; }
+
+        /// <summary>
+        /// The PowerPlatform Dataverse organization service for SYSTEM (disabled) user
+        /// </summary>
+        public IOrganizationService RootService { get; }
 
         /// <summary>
         /// IPluginExecutionContext contains information that describes the run-time environment in which the plug-in executes, information related to the execution pipeline, and entity business information.
@@ -202,6 +212,7 @@ namespace Ianua.Ianus.Dataverse.Plugins
 
             InitiatingUserService = serviceProvider.GetOrganizationService(PluginExecutionContext.InitiatingUserId); //User who's action called the plugin.
 
+            RootService = factory.CreateOrganizationService(null);
         }
 
         /// <summary>
