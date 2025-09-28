@@ -17,11 +17,10 @@ export interface ILicenseClaims {
     prd: string;
     sub: string;
     env: IEnvironmentIdentifier[];
-    required_roles: string[];
     iat: number;
     nbf: number;
     exp?: number;
-    custom: Record<string, any>;
+    cus: Record<string, any>;
     iss_meta: IMeta;
     aud_meta: IMeta;
     pub_meta: IMeta;

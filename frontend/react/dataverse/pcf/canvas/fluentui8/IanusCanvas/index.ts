@@ -67,6 +67,7 @@ export class IanusCanvas implements ComponentFramework.ReactControl<IInputs, IOu
             // This works only in canvas apps at the time of writing
             // Otherwise, pass webAPI
             dataProvider: context.parameters.licenseDataSet,
+            offlineDataProvider: context.parameters.offlineLicenseDataSet,
             usagePermission: context.parameters.usagePermission.raw,
             onLicenseValidated: this.onLicenseValidated
         };

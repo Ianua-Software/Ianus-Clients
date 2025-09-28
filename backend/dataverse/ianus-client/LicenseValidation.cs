@@ -176,11 +176,18 @@ namespace Ianua.Ianus.Dataverse.Client
 
         public static Entity RetrieveLicense(Guid publisherId, Guid productId, IOrganizationService service)
         {
+            var identifier = $"{publisherId}_{productId}";
+
+            return RetrieveLicense(identifier, service);
+        }
+
+        public static Entity RetrieveLicense(string identifier, IOrganizationService service)
+        {
             try
             {
                 var alternateKey = new KeyAttributeCollection
                 {
-                    { "ian_identifier", $"{publisherId}_{productId}" }
+                    { "ian_identifier", identifier }
                 };
 
                 var entityRef = new EntityReference("ian_license", alternateKey);

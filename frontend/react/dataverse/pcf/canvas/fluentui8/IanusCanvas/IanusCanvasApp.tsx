@@ -13,6 +13,7 @@ export interface IIanusCanvasAppProps {
   environmentType: EnvironmentType;
   environmentIdentifier: string;
   dataProvider: ComponentFramework.PropertyTypes.DataSet;
+  offlineDataProvider: ComponentFramework.PropertyTypes.DataSet;
   usagePermission?: boolean | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onLicenseValidated?: (result: LicenseValidationResult) => any
@@ -31,7 +32,7 @@ const IanusCanvasContent: React.FC = () => {
   );
 }
 
-export const IanusCanvasApp: React.FC<IIanusCanvasAppProps> = ({ publisherId, productId, publicKey, fallbackPublicKey, environmentType, environmentIdentifier, dataProvider, usagePermission, onLicenseValidated }) => {
+export const IanusCanvasApp: React.FC<IIanusCanvasAppProps> = ({ publisherId, productId, publicKey, fallbackPublicKey, environmentType, environmentIdentifier, dataProvider, offlineDataProvider, usagePermission, onLicenseValidated }) => {
   return (
     <IanusProvider
       publisherId={publisherId}
@@ -40,6 +41,7 @@ export const IanusCanvasApp: React.FC<IIanusCanvasAppProps> = ({ publisherId, pr
       environmentType={environmentType}
       environmentIdentifier={environmentIdentifier}
       dataProvider={dataProvider}
+      offlineDataProvider={offlineDataProvider}
       usagePermission={usagePermission}
       onLicenseValidated={onLicenseValidated}
     >

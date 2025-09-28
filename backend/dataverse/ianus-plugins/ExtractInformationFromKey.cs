@@ -53,7 +53,7 @@ namespace Ianua.Ianus.Dataverse.Plugins
 
                 if (string.IsNullOrEmpty(licenseKey))
                 {
-                    return;
+                    throw new InvalidPluginExecutionException("License key is mandatory!");
                 }
 
                 // Split the license key into parts
@@ -61,7 +61,7 @@ namespace Ianua.Ianus.Dataverse.Plugins
 
                 if (parts.Length < 3)
                 {
-                    return;
+                    throw new InvalidPluginExecutionException("Invalid license key!");
                 }
 
                 var encodedHeaders = parts[0];
@@ -74,11 +74,30 @@ namespace Ianua.Ianus.Dataverse.Plugins
 
                 if (license == null)
                 {
-                    return;
+                    throw new InvalidPluginExecutionException("Invalid license key!");
                 }
                 else
                 {
-                    target["ian_identifier"] = $"{license.Pub}_{license.Prd}";
+                    var identifier = $"{license.Pub}_{license.Prd}";
+
+                    var existingLicense = LicenseValidation.RetrieveLicense(identifier, localPluginContext.RootService);
+
+                    if (existingLicense != null)
+                    {
+                        var update = new Entity("ian_license", existingLicense.Id)
+                        {
+                            Attributes =
+                            {
+                                { "ian_identifier", null },
+                                { "statecode", new OptionSetValue(1) },
+                                { "statuscode", new OptionSetValue(2) }
+                            }
+                        };
+
+                        localPluginContext.RootService.Update(update);
+                    }
+
+                    target["ian_identifier"] = identifier;
                     target["ian_name"] = $"{license.PubMeta?.Name} - {license.PrdMeta?.Name}";
 
                     if (license.Exp != null)
@@ -90,7 +109,7 @@ namespace Ianua.Ianus.Dataverse.Plugins
             catch (Exception ex)
             {
                 localPluginContext.Logger.LogError(ex, "An exception occured: {0}", ex.Message);
-                return;
+                throw;
             }
         }
     }

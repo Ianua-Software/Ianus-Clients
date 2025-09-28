@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="Ianua" constructor="IanusCanvas" version="1.0.2" display-name-key="Ianus Guard Canvas" description-key="Ianus Guard for Canvas Apps" control-type="virtual" >
+  <control namespace="Ianua" constructor="IanusCanvas" version="1.0.9" display-name-key="Ianus Guard Canvas" description-key="Ianus Guard for Canvas Apps" control-type="virtual" >
     <!--external-service-usage node declares whether this 3rd party PCF control is using external service or not, if yes, this control will be considered as premium and please also add the external domain it is using.
     If it is not using any external service, please set the enabled="false" and DO NOT add any domain below. The "enabled" will be false by default.
     Example1:
@@ -19,6 +19,7 @@
     </external-service-usage>
 
     <data-set name="licenseDataSet" display-name-key="License Dataset" description-key="Use ian_license table as data" />
+    <data-set name="offlineLicenseDataSet" display-name-key="Offline License Dataset" description-key="Use a collection of ian_license table as data" />
     
     <property name="tenantId" display-name-key="Tenant Id" description-key="Id of your Entra ID tenant. You can get this from PowerFx by using the formula Host.TenantID" of-type="SingleLine.Text" usage="input" required="true" pfx-default-value="Host.TenantID" />
 

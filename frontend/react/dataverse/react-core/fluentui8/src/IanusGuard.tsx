@@ -45,6 +45,11 @@ export interface IIanusGuardProps {
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
 
     /**
+     * Data provider for retrieving licenses in the current environment. Only needed in canvas apps. PCFs can query offline data using the primary (webAPI) data provider.
+     */
+    offlineDataProvider?: ComponentFramework.PropertyTypes.DataSet;
+
+    /**
      * When using user-based licensing, usage permission is derived by having read permission to a defined 'usage-entity'. Pass the result of the license check here, if read is allowed, pass true, otherwise false.
      * Pass null while you're fetching the permission.
      * For canvas apps, use the DataSourceInfo PowerFX function, for PCFs use pcfContext.utils.getEntityMetadata for loading the metadata followed by pcfContext.utils.hasEntityPrivilege for getting the permission result.
@@ -119,7 +124,7 @@ const fetchOrganizationIdFromWebApi = async (webApi: ComponentFramework.WebApi) 
     return organization.organizationid;
 };
 
-export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys, environmentType, environmentIdentifier, dataProvider, usagePermission, onLicenseValidated, children }) => {
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys, environmentType, environmentIdentifier, dataProvider, offlineDataProvider, usagePermission, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
     const onSettingsFinally = () => {
@@ -145,7 +150,10 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                 };
             }
 
-            const licenses = await acquireLicenses(publisherId, productId, dataProvider);
+            const onlineLicenses = await acquireLicenses(publisherId, productId, dataProvider);
+            const offlineLicenses = offlineDataProvider != null ? await acquireLicenses(publisherId, productId, offlineDataProvider) : [];
+
+            const licenses = onlineLicenses.length ? onlineLicenses : offlineLicenses;
 
             if (!licenses.length) {
                 return {
@@ -181,7 +189,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                 reason: (e as unknown as { message: string })?.message
             };
         }
-    }, [dataProvider, environmentIdentifier, environmentType, productId, publicKeys, publisherId]);
+    }, [dataProvider, environmentIdentifier, environmentType, offlineDataProvider, productId, publicKeys, publisherId]);
 
     const initLicenseValidation = React.useCallback(async () => {
         const result = await runValidation();
@@ -202,7 +210,10 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
             licenseDispatch({ type: "setLicense", payload: result });
             updateResultIfDefined(result, onLicenseValidated);
         }
-        else if (!isDataset(dataProvider) || (!dataProvider.error && !dataProvider.loading && dataProvider.paging.totalResultCount >= 0))
+        else if (!isDataset(dataProvider)
+            || (!dataProvider.error && !dataProvider.loading && dataProvider.paging.totalResultCount >= 0)
+            || (offlineDataProvider != null && !offlineDataProvider.error && !offlineDataProvider.loading && offlineDataProvider.paging.totalResultCount >= 0)
+        )
         {
             initLicenseValidation();
         }
@@ -217,16 +228,16 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
             licenseDispatch({ type: "setLicense", payload: result });
             updateResultIfDefined(result, onLicenseValidated);
         }
-    }, [dataProvider, initLicenseValidation, licenseDispatch, usagePermission, onLicenseValidated]);
+    }, [dataProvider, initLicenseValidation, licenseDispatch, usagePermission, onLicenseValidated, offlineDataProvider]);
 
     return licenseState.license?.isValid
         ? ( <>
-            { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+            { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
             { children }
         </> )
         : (
             <div style={{ display: "flex", width: "100%", height: "100%", flex: "1" }}>
-                { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+                { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1}}>
                     { licenseState.license?.isValid === false && (
                         <MessageBar

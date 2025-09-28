@@ -1,0 +1,2 @@
+#!/bin/bash
+rm -rf ./bin && rm -rf ./obj && dotnet build && pac plugin push --pluginId cae9d934-b964-f011-bec2-7c1e52733d08 --type Nuget --pluginFile bin/Debug/Ianua.Ianus.Dataverse.Plugins.1.0.0.nupkg

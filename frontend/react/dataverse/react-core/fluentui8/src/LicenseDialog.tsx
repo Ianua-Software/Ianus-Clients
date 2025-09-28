@@ -30,11 +30,12 @@ export interface ILicenseDialogProps {
     publisherId: string;
     productId: string;
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
+    offlineDataProvider?: ComponentFramework.PropertyTypes.DataSet;
     onSubmit: () => void;
     onCancel: () => void;
 }
 
-export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, productId, dataProvider, onCancel, onSubmit }) => {
+export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, productId, dataProvider, offlineDataProvider, onCancel, onSubmit }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
     
     const [ submitBlocked, setSubmitBlocked ] = React.useState(true);
@@ -46,7 +47,10 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
         (async() => {
             if (!licenseId)
             {
-                const licenses = await acquireLicenses(publisherId, productId, dataProvider);
+                const onlineLicenses = await acquireLicenses(publisherId, productId, dataProvider);
+                const offlineLicenses = offlineDataProvider != null ? await acquireLicenses(publisherId, productId, offlineDataProvider) : [];
+    
+                const licenses = onlineLicenses.length ? onlineLicenses : offlineLicenses;
 
                 if (licenses.length > 0)
                 {
@@ -54,7 +58,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
                 }
             }
         })();
-    }, [dataProvider, licenseId, productId, publisherId]);
+    }, [dataProvider, licenseId, offlineDataProvider, productId, publisherId]);
 
     const tryToExtractDisplayNames = ( licenseKey?: string ) =>
     {
@@ -125,6 +129,19 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         await (dataProvider.records[licenseId] as any).save();
                     }
+                    // In this case, Ianus Guard is configured for offline access where the dataset contains no data
+                    // Therefore we have to do an insertion and have the plugin deprecate the existing license
+                    else
+                    {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const newLicense = await (dataProvider as any).newRecord();
+
+                        // When creating as update, we only set the key.
+                        // The rest is handled by the ExtractInformationFromKey plugin.
+                        await newLicense.setValue("ian_key", licenseKeyInput);
+
+                        await newLicense.save();
+                    }
                 }
             }
             else {
@@ -154,7 +171,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
         catch(e)
         {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setError((e as any)?.message);
+            setError((e as any)?.message ?? JSON.stringify(e));
         }
         finally
         {
@@ -199,6 +216,12 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
                     <p>
                         <span style={{fontWeight: 'bold'}}>License expires after: </span> <span>{!licenseState.license?.claims?.exp ? "Never" : new Date(licenseState.license?.claims.exp * 1000).toISOString()}</span>
                     </p>
+                    {
+                        licenseState.license?.claims?.cus &&
+                            <p>
+                                <span style={{fontWeight: 'bold'}}>Custom claims: </span> <span>{JSON.stringify(licenseState.license.claims.cus)}</span>
+                            </p>
+                    }
                 </Text>
             }
         <DialogFooter>
