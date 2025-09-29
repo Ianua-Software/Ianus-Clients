@@ -66,11 +66,11 @@ export interface IIanusGuardProps {
 }
 
 export const isWebApi = (dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet | string): dataProvider is ComponentFramework.WebApi => {
-    return (dataProvider as ComponentFramework.WebApi).retrieveMultipleRecords !== undefined;
+    return (dataProvider as ComponentFramework.WebApi)?.retrieveMultipleRecords !== undefined;
 };
 
 export const isDataset = (dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet | string): dataProvider is ComponentFramework.PropertyTypes.DataSet => {
-    return (dataProvider as ComponentFramework.PropertyTypes.DataSet).records !== undefined;
+    return (dataProvider as ComponentFramework.PropertyTypes.DataSet)?.sortedRecordIds !== undefined;
 };
 
 export const acquireLicenses = async (publisherId: string, productId: string, dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet): Promise<ComponentFramework.WebApi.Entity[]> => {
@@ -81,15 +81,18 @@ export const acquireLicenses = async (publisherId: string, productId: string, da
         return response.entities;
     }
     else if (isDataset(dataProvider)) {
-        if (dataProvider.records.length) {
-            const record = dataProvider.records[0];
+        const recordValues = Object.values(dataProvider.records ?? {});
 
-            if (record.getNamedReference().etn !== "ian_license") {
+        if (recordValues.length) {
+            const record = recordValues[0];
+            const recordReference = record.getNamedReference();
+
+            if (recordReference.etn && recordReference.etn !== "ian_license") {
                 throw new Error("You need to pass the 'ian_license' entity as data source for LicenseDataset when using a dataset as value")
             }
         }
 
-        return Object.values(dataProvider.records)
+        return recordValues
             .filter(r => r.getValue("ian_identifier") === licenseIdentifier)
             .map(r => ({ ian_licenseid: r.getValue("ian_licenseid"), ian_identifier: r.getValue("ian_identifier"), ian_key: r.getValue("ian_key") } as ComponentFramework.WebApi.Entity));
     }
@@ -198,7 +201,80 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
         updateResultIfDefined(result, onLicenseValidated);
     }, [licenseDispatch, onLicenseValidated, runValidation]);
 
+    const dataTotalResultCount = isDataset(dataProvider)
+        ? dataProvider.paging.totalResultCount
+        : undefined;
+
+    const dataIsLoading = isDataset(dataProvider)
+        ? dataProvider.loading
+        : undefined;
+
+    const dataHasError = isDataset(dataProvider)
+        ? dataProvider.error
+        : undefined;
+
+    const dataProviderState = React.useMemo(() =>
+    {
+        if (!isDataset(dataProvider))
+        {
+            return "webapi";
+        }
+        else
+        {
+            return `dataset-${dataTotalResultCount}-${dataIsLoading}-${dataHasError}`;
+        }
+    }, [dataProvider, dataHasError, dataIsLoading, dataTotalResultCount]);
+
+    const offlineDataTotalResultCount = offlineDataProvider != null
+        ? offlineDataProvider.paging.totalResultCount
+        : undefined;
+
+    const offlineDataIsLoading = offlineDataProvider != null
+        ? offlineDataProvider.loading
+        : undefined;
+
+    const offlineDataHasError = offlineDataProvider != null
+        ? offlineDataProvider.error
+        : undefined;
+
+    const offlineDataProviderState = React.useMemo(() =>
+    {
+        if (offlineDataProvider == null)
+        {
+            return "unused"
+        }
+        else
+        {
+            return `dataset-${offlineDataTotalResultCount}-${offlineDataIsLoading}-${offlineDataHasError}`;
+        }
+    }, [offlineDataHasError, offlineDataIsLoading, offlineDataProvider, offlineDataTotalResultCount]);
+
+    const dataProviderSignature = React.useMemo(() => {
+        if (isDataset(dataProvider) && dataProvider.records) {
+            return Object.values(dataProvider.records)
+                .map(r => `${r.getRecordId()}-${r.getValue("ian_identifier")}-${r.getValue("ian_key")}`)
+                .join("|");
+        }
+        return "";
+    }, [dataProvider]);
+
+    const offlineDataProviderSignature = React.useMemo(() => {
+        if (offlineDataProvider && offlineDataProvider.records) {
+            return Object.values(offlineDataProvider.records)
+                .map(r => `${r.getRecordId()}-${r.getValue("ian_identifier")}-${r.getValue("ian_key")}`)
+                .join("|");
+        }
+        return "";
+    }, [offlineDataProvider]);
+
+
     React.useEffect(() => {
+        console.log(`Starting license evaluation at ${new Date().toISOString()}`);
+        console.log(`DataProvider state: ${dataProviderState}`);
+        console.log(`DataProvider signature: ${dataProviderSignature}`);
+        console.log(`Offline DataProvider state: ${offlineDataProviderState}`);
+        console.log(`Offline DataProvider signature: ${offlineDataProviderSignature}`);
+
         if ( usagePermission != null && !usagePermission )
         {
             const result: LicenseValidationResult = {
@@ -228,7 +304,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
             licenseDispatch({ type: "setLicense", payload: result });
             updateResultIfDefined(result, onLicenseValidated);
         }
-    }, [dataProvider, initLicenseValidation, licenseDispatch, usagePermission, onLicenseValidated, offlineDataProvider]);
+    }, [dataProvider, dataProviderState, dataProviderSignature, initLicenseValidation, licenseDispatch, usagePermission, onLicenseValidated, offlineDataProvider, offlineDataProviderState, offlineDataProviderSignature]);
 
     return licenseState.license?.isValid
         ? ( <>

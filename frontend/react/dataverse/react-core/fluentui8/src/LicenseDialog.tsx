@@ -128,6 +128,8 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
                         await (dataProvider.records[licenseId] as any).setValue("ian_key", licenseKeyInput);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         await (dataProvider.records[licenseId] as any).save();
+
+                        dataProvider.refresh();
                     }
                     // In this case, Ianus Guard is configured for offline access where the dataset contains no data
                     // Therefore we have to do an insertion and have the plugin deprecate the existing license
@@ -141,6 +143,8 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
                         await newLicense.setValue("ian_key", licenseKeyInput);
 
                         await newLicense.save();
+
+                        dataProvider.refresh();
                     }
                 }
             }
@@ -163,6 +167,8 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
                     await newLicense.setValue("ian_identifier", identifier);
                     await newLicense.setValue("ian_key", licenseKeyInput);
                     await newLicense.save();
+
+                    dataProvider.refresh();
                 }
             }
 
