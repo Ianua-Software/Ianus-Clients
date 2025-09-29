@@ -170,7 +170,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                 return {
                     isValid: false,
                     isTerminalError: true,
-                    reason: `Multiple active licenses for '${publisherId}_${productId}' found, please make sure there is only one active license`
+                    reason: `Multiple active licenses for '${publisherId}_${productId}' found, please make sure there is only one active license. If on mobile canvas app, check for data updates in the device status / connection dialog and then clear cache.`
                 };
             }
 

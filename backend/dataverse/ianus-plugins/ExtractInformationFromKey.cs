@@ -80,23 +80,6 @@ namespace Ianua.Ianus.Dataverse.Plugins
                 {
                     var identifier = $"{license.Pub}_{license.Prd}";
 
-                    var existingLicense = LicenseValidation.RetrieveLicense(identifier, localPluginContext.RootService);
-
-                    if (existingLicense != null)
-                    {
-                        var update = new Entity("ian_license", existingLicense.Id)
-                        {
-                            Attributes =
-                            {
-                                { "ian_identifier", null },
-                                { "statecode", new OptionSetValue(1) },
-                                { "statuscode", new OptionSetValue(2) }
-                            }
-                        };
-
-                        localPluginContext.RootService.Update(update);
-                    }
-
                     target["ian_identifier"] = identifier;
                     target["ian_name"] = $"{license.PubMeta?.Name} - {license.PrdMeta?.Name}";
 

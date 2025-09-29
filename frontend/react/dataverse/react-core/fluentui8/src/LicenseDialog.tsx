@@ -138,10 +138,9 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const newLicense = await (dataProvider as any).newRecord();
 
-                        // When creating as update, we only set the key.
-                        // The rest is handled by the ExtractInformationFromKey plugin.
+                        await newLicense.setValue("ian_name", name);
+                        await newLicense.setValue("ian_identifier", identifier);
                         await newLicense.setValue("ian_key", licenseKeyInput);
-
                         await newLicense.save();
 
                         dataProvider.refresh();
