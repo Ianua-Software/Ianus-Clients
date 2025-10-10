@@ -10,6 +10,7 @@ import { LicenseValidationResult } from '../../../../../ianus-core/LicenseValida
 import { LicenseDialog } from './LicenseDialog';
 import { useLicenseContext } from './IanusLicenseStateProvider';
 import { DataverseLicenseValidationResult } from './DataverseLicenseValidationResult';
+import { DebugDialog } from './DebugDialog';
 
 export type EnvironmentType = "entra" | "dataverse";
 
@@ -130,11 +131,6 @@ const fetchOrganizationIdFromWebApi = async (webApi: ComponentFramework.WebApi) 
 export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys, environmentType, environmentIdentifier, dataProvider, offlineDataProvider, usagePermission, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
-    const onSettingsFinally = () => {
-        licenseDispatch({ type: "setLicenseDialogVisible", payload: false });
-        initLicenseValidation();
-    };
-
     const runValidation = React.useCallback(async (): Promise<DataverseLicenseValidationResult> => {
         try {
             if (!productId) {
@@ -200,6 +196,15 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
 
         updateResultIfDefined(result, onLicenseValidated);
     }, [licenseDispatch, onLicenseValidated, runValidation]);
+
+    const onSettingsFinally = React.useCallback(() => {
+        licenseDispatch({ type: "setLicenseDialogVisible", payload: false });
+        initLicenseValidation();
+    }, [initLicenseValidation, licenseDispatch]);
+
+    const onDebugFinally = React.useCallback(() => {
+        licenseDispatch({ type: "setDebugDialogVisible", payload: false });
+    }, [licenseDispatch]);
 
     const dataTotalResultCount = isDataset(dataProvider)
         ? dataProvider.paging.totalResultCount
@@ -314,6 +319,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
         : (
             <div style={{ display: "flex", width: "100%", height: "100%", flex: "1" }}>
                 { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
+                { licenseState.debugDialogVisible && <DebugDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onDismiss={onDebugFinally} /> }
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1}}>
                     { licenseState.license?.isValid === false && (
                         <MessageBar
@@ -329,6 +335,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                             actions={
                                 <div>
                                     { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setLicenseDialogVisible", payload: true })}>Set License</MessageBarButton> }
+                                    { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setDebugDialogVisible", payload: true })}>Debug</MessageBarButton> }
                                 </div>
                             }
                         >

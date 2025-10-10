@@ -2,13 +2,15 @@ import * as React from "react";
 import { DataverseLicenseValidationResult } from "./DataverseLicenseValidationResult";
 
 type Action = { type: "setLicense", payload: DataverseLicenseValidationResult | undefined }
-    | { type: "setLicenseDialogVisible", payload: boolean };
+    | { type: "setLicenseDialogVisible", payload: boolean }
+    | { type: "setDebugDialogVisible", payload: boolean };
 
 export type IanusLicenseDispatch = (action: Action) => void;
 
 export type IanusLicenseStateProps = {
     license?: DataverseLicenseValidationResult;
     licenseDialogVisible?: boolean;
+    debugDialogVisible?: boolean;
 };
 
 function stateReducer(state: IanusLicenseStateProps, action: Action): IanusLicenseStateProps {
@@ -18,6 +20,9 @@ function stateReducer(state: IanusLicenseStateProps, action: Action): IanusLicen
         }
         case "setLicenseDialogVisible": {
             return { ...state, licenseDialogVisible: action.payload };
+        }
+        case "setDebugDialogVisible": {
+            return { ...state, debugDialogVisible: action.payload };
         }
     }
 }
