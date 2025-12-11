@@ -16,7 +16,7 @@ namespace Ianua.Ianus.Dataverse.Plugins
     /// </summary>
     public class LicenseValidationApi : PluginBase
     {
-        private HttpClient _httpClient = new HttpClient();
+        private static readonly HttpClient HttpClient = new HttpClient();
 
         public LicenseValidationApi(string unsecureConfiguration, string secureConfiguration)
             : base(typeof(LicenseValidationApi))
@@ -153,7 +153,7 @@ namespace Ianua.Ianus.Dataverse.Plugins
                                     { "X-API-Key", telemetryApiKey }
                                 }
                             };
-                            var httpResponse = _httpClient.SendAsync(httpRequest).GetAwaiter().GetResult();
+                            var httpResponse = HttpClient.SendAsync(httpRequest).GetAwaiter().GetResult();
 
                             if (httpResponse.IsSuccessStatusCode)
                             {

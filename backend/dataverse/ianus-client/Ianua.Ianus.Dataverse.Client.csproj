@@ -3,12 +3,14 @@
   <PropertyGroup>
     <OutputType>library</OutputType>
     <TargetFramework>net462</TargetFramework>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>ianua.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- NuGet package metadata -->
     <PackageId>Ianua.Ianus.Dataverse.Client</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Ianua Software</Authors>
     <Company>Ianua Software</Company>
     <Description>.NET client for validating Ianus Guard licenses</Description>
