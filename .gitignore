@@ -17,3 +17,6 @@
 **/*.binlog
 
 **/dist
+
+# NPM login config
+**/.npmrc
