@@ -36,12 +36,14 @@ const dialogContentProps = {
 export interface IDebugDialogProps {
     publisherId: string;
     productId: string;
+    environmentType: string;
+    environmentIdentifier: string;
     dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet;
     offlineDataProvider?: ComponentFramework.PropertyTypes.DataSet;
     onDismiss: () => void;
 }
 
-export const DebugDialog: React.FC<IDebugDialogProps> = ({ publisherId, productId, dataProvider, offlineDataProvider, onDismiss }) => {
+export const DebugDialog: React.FC<IDebugDialogProps> = ({ publisherId, productId, environmentType, environmentIdentifier, dataProvider, offlineDataProvider, onDismiss }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
     const licenseColumns: IColumn[] = [
@@ -72,6 +74,8 @@ export const DebugDialog: React.FC<IDebugDialogProps> = ({ publisherId, productI
             modalProps={modalProps}
         >
             <p>
+                <Text><b>Current environment type:</b> {environmentType}</Text>
+                <Text><b>Current environment identifier:</b> {environmentIdentifier}</Text>
                 <Text><b>Target license identifier:</b> {publisherId}_{productId}</Text>
                 <br />
                 <br />

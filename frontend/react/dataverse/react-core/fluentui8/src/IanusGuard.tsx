@@ -102,20 +102,6 @@ export const acquireLicenses = async (publisherId: string, productId: string, da
     }
 };
 
-const updateResultIfDefined = ( result: LicenseValidationResult, onLicenseValidated: ( ( result: LicenseValidationResult ) => unknown ) | undefined ) => {
-    if (onLicenseValidated) {
-        try
-        {
-            onLicenseValidated(result);
-        }
-        catch( e ) {
-            if (e && e instanceof Error) {
-                console.error(`Error while calling onLicenseValidated: '${e.message}'`);
-            }
-        }
-    }
-};
-
 const fetchOrganizationIdFromWebApi = async (webApi: ComponentFramework.WebApi) => {
     const results = await webApi.retrieveMultipleRecords("organization", "?$top=1&$select=organizationid");
 
@@ -131,9 +117,28 @@ const fetchOrganizationIdFromWebApi = async (webApi: ComponentFramework.WebApi) 
 export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys, environmentType, environmentIdentifier, dataProvider, offlineDataProvider, usagePermission, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
+    // Stabilize callback references
+    const onLicenseValidatedRef = React.useRef(onLicenseValidated);
+    React.useEffect(() => {
+        onLicenseValidatedRef.current = onLicenseValidated;
+    }, [onLicenseValidated]);
+
+    // Stabilize publicKeys array reference
+    const publicKeysRef = React.useRef(publicKeys);
+    React.useEffect(() => {
+        if (JSON.stringify(publicKeys) !== JSON.stringify(publicKeysRef.current))
+        {
+            publicKeysRef.current = publicKeys;
+        }
+    }, [publicKeys]);
+
+    const resolvedEnvironmentIdentifierRef = React.useRef<string | null>(null);
+
     const runValidation = React.useCallback(async (): Promise<DataverseLicenseValidationResult> => {
-        try {
-            if (!productId) {
+        try
+        {
+            if (!productId)
+            {
                 return {
                     isValid: false,
                     isTerminalError: true,
@@ -141,7 +146,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                 };
             }
 
-            if (!publicKeys || !publicKeys.length) {
+            if (!publicKeysRef.current || !publicKeysRef.current.length) {
                 return {
                     isValid: false,
                     isTerminalError: true,
@@ -171,9 +176,22 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
             }
 
             const licenseRecord = licenses[0];
-            const resolvedEnvironmentIdentifier = ( isWebApi(environmentIdentifier) ? await fetchOrganizationIdFromWebApi(environmentIdentifier) : environmentIdentifier as string );
+            // Resolve environment identifier (cache it)
+            if (resolvedEnvironmentIdentifierRef.current === null) {
+                resolvedEnvironmentIdentifierRef.current = isWebApi(environmentIdentifier) 
+                    ? await fetchOrganizationIdFromWebApi(environmentIdentifier) 
+                    : environmentIdentifier as string;
+            }
 
-            const validationResult = await validateLicense(publisherId, productId, environmentType, resolvedEnvironmentIdentifier, publicKeys, licenseRecord.ian_key);
+            if (!resolvedEnvironmentIdentifierRef.current) {
+                return {
+                    isValid: false,
+                    isTerminalError: true,
+                    reason: `Failed to determine current environment identifier!`
+                };
+            }
+
+            const validationResult = await validateLicense(publisherId, productId, environmentType, resolvedEnvironmentIdentifierRef.current, publicKeysRef.current, licenseRecord.ian_key);
 
             return {
                 ...validationResult,
@@ -181,21 +199,35 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                 licenseKey: licenseRecord.ian_key,
             };
         }
-        catch (e) {
+        catch (e)
+        {
             return {
                 isValid: false,
                 isTerminalError: true,
                 reason: (e as unknown as { message: string })?.message
             };
         }
-    }, [dataProvider, environmentIdentifier, environmentType, offlineDataProvider, productId, publicKeys, publisherId]);
+    }, [dataProvider, environmentIdentifier, environmentType, offlineDataProvider, productId, publisherId]);
 
     const initLicenseValidation = React.useCallback(async () => {
         const result = await runValidation();
         licenseDispatch({ type: "setLicense", payload: result });
 
-        updateResultIfDefined(result, onLicenseValidated);
-    }, [licenseDispatch, onLicenseValidated, runValidation]);
+        if (onLicenseValidatedRef.current)
+        {
+            try
+            {
+                onLicenseValidatedRef.current(result);
+            }
+            catch (e)
+            {
+                if (e && e instanceof Error)
+                {
+                    console.error(`Error while calling onLicenseValidated: '${e.message}'`);
+                }
+            }
+        }
+    }, [licenseDispatch, runValidation]);
 
     const onSettingsFinally = React.useCallback(() => {
         licenseDispatch({ type: "setLicenseDialogVisible", payload: false });
@@ -289,7 +321,19 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
             };
 
             licenseDispatch({ type: "setLicense", payload: result });
-            updateResultIfDefined(result, onLicenseValidated);
+            if (onLicenseValidatedRef.current) {
+                try
+                {
+                    onLicenseValidatedRef.current(result);
+                }
+                catch (e)
+                {
+                    if (e && e instanceof Error)
+                    {
+                        console.error(`Error while calling onLicenseValidated: '${e.message}'`);
+                    }
+                }
+            }
         }
         else if (!isDataset(dataProvider)
             || (!dataProvider.error && !dataProvider.loading && dataProvider.paging.totalResultCount >= 0)
@@ -307,9 +351,22 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
             };
 
             licenseDispatch({ type: "setLicense", payload: result });
-            updateResultIfDefined(result, onLicenseValidated);
+
+            if (onLicenseValidatedRef.current) {
+                try
+                {
+                    onLicenseValidatedRef.current(result);
+                }
+                catch (e)
+                {
+                    if (e && e instanceof Error)
+                    {
+                        console.error(`Error while calling onLicenseValidated: '${e.message}'`);
+                    }
+                }
+            }
         }
-    }, [dataProvider, dataProviderState, dataProviderSignature, initLicenseValidation, licenseDispatch, usagePermission, onLicenseValidated, offlineDataProvider, offlineDataProviderState, offlineDataProviderSignature]);
+    }, [dataProvider, dataProviderState, dataProviderSignature, initLicenseValidation, licenseDispatch, usagePermission, offlineDataProvider, offlineDataProviderState, offlineDataProviderSignature]);
 
     return licenseState.license?.isValid
         ? ( <>
@@ -319,7 +376,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
         : (
             <div style={{ display: "flex", width: "100%", height: "100%", flex: "1" }}>
                 { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onSubmit={onSettingsFinally} onCancel={onSettingsFinally} /> }
-                { licenseState.debugDialogVisible && <DebugDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onDismiss={onDebugFinally} /> }
+                { licenseState.debugDialogVisible && <DebugDialog publisherId={publisherId} productId={productId} environmentType={environmentType} environmentIdentifier={resolvedEnvironmentIdentifierRef.current || ""} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onDismiss={onDebugFinally} /> }
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1}}>
                     { licenseState.license?.isValid === false && (
                         <MessageBar
