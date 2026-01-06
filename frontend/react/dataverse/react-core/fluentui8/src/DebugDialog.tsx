@@ -73,7 +73,7 @@ export const DebugDialog: React.FC<IDebugDialogProps> = ({ publisherId, productI
             dialogContentProps={dialogContentProps}
             modalProps={modalProps}
         >
-            <p>
+            <p style={{ display: "flex", flexDirection: "column"}}>
                 <Text><b>Current environment type:</b> {environmentType}</Text>
                 <Text><b>Current environment identifier:</b> {environmentIdentifier}</Text>
                 <Text><b>Target license identifier:</b> {publisherId}_{productId}</Text>
