@@ -12,6 +12,7 @@ import { useLicenseContext } from './IanusLicenseStateProvider';
 import { DataverseLicenseValidationResult } from './DataverseLicenseValidationResult';
 import { DebugDialog } from './DebugDialog';
 import { LicenseAcquisitionDialog } from './LicenseAcquisitionDialog';
+import { normalizeGuid } from './Utils';
 
 export type EnvironmentType = "entra" | "dataverse";
 
@@ -207,9 +208,11 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
         {
             // Resolve environment identifier (cache it)
             if (resolvedEnvironmentIdentifierRef.current === null) {
-                resolvedEnvironmentIdentifierRef.current = isWebApi(environmentIdentifier) 
-                    ? await fetchOrganizationIdFromWebApi(environmentIdentifier) 
-                    : (environmentIdentifier as string)?.replace("{", "").replace("}", "").toLowerCase();
+                if (isWebApi(environmentIdentifier)) {
+                    resolvedEnvironmentIdentifierRef.current = normalizeGuid(await fetchOrganizationIdFromWebApi(environmentIdentifier));
+                } else {
+                    resolvedEnvironmentIdentifierRef.current = normalizeGuid(environmentIdentifier);
+                }
             }
 
             if (!resolvedEnvironmentIdentifierRef.current) {
@@ -443,7 +446,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                             actions={
                                 <div>
                                     { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_details" })}>Set License</MessageBarButton> }
-                                    { !licenseState.license?.isTerminalError && licenseAcquisitionConfigRef.current && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_acquisition" })}>Acquire a license</MessageBarButton> }
+                                    { !licenseState.license?.isTerminalError && licenseAcquisitionConfigRef.current && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_acquisition" })}>Acquire License</MessageBarButton> }
                                     { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "debug" })}>Debug</MessageBarButton> }
                                 </div>
                             }

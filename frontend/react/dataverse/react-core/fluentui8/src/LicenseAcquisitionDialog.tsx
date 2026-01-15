@@ -12,6 +12,7 @@ import {
 } from '@fluentui/react';
 import { useLicenseContext } from './IanusLicenseStateProvider';
 import { EnvironmentEntry, EnvironmentType, LicenseAcquisitionConfig } from './IanusGuard';
+import { normalizeGuid } from './Utils';
 
 const modalProps = {
     isBlocking: false,
@@ -69,9 +70,17 @@ export const LicenseAcquisitionDialog: React.FC<ILicenseDialogProps> = ({
                 ...(config?.prefillData?.additionalEnvironments ?? [])
             ];
 
+            // Ensure all environment identifiers are cleansed
+            const cleansedEnvironments = allEnvironments.map(env => ({
+                ...env,
+                identifier: normalizeGuid(env.identifier) // ✅ Cleanse all
+            }));
+
             // Remove duplicates based on identifier
-            const uniqueEnvironments = allEnvironments.filter((env, index, self) =>
-                index === self.findIndex(e => e.identifier.toLowerCase() === env.identifier.toLowerCase())
+            const uniqueEnvironments = cleansedEnvironments.filter((env, index, self) =>
+                index === self.findIndex(e => 
+                    normalizeGuid(e.identifier) === normalizeGuid(env.identifier)
+                )
             );
 
             const prefillData = {
@@ -133,14 +142,13 @@ export const LicenseAcquisitionDialog: React.FC<ILicenseDialogProps> = ({
             </Stack>
 
             <DialogFooter>
-                {config.type === 'url' ? (
-                    <>
-                        <PrimaryButton onClick={onOpenTrialPage} text="Open Trial Request Page" />
-                        <DefaultButton onClick={onDismiss} text="Close" />
-                    </>
-                ) : (
-                    <PrimaryButton onClick={onDismiss} text="Close" />
-                )}
+                {
+                    config.type === 'url'
+                        ? (<PrimaryButton onClick={onOpenTrialPage} text="Open" />)
+                        : null
+                }
+
+                <DefaultButton onClick={onDismiss} text="Close" />
             </DialogFooter>
         </Dialog>
     );
