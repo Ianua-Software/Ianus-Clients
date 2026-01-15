@@ -186,7 +186,7 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
 
     return (
         <Dialog
-            hidden={!licenseState?.licenseDialogVisible}
+            hidden={licenseState?.visibleDialog !== "license_details"}
             onDismiss={onCancel}
             dialogContentProps={dialogContentProps}
             modalProps={modalProps}

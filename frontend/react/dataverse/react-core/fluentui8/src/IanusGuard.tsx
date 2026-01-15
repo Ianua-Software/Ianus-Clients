@@ -11,8 +11,42 @@ import { LicenseDialog } from './LicenseDialog';
 import { useLicenseContext } from './IanusLicenseStateProvider';
 import { DataverseLicenseValidationResult } from './DataverseLicenseValidationResult';
 import { DebugDialog } from './DebugDialog';
+import { LicenseAcquisitionDialog } from './LicenseAcquisitionDialog';
 
 export type EnvironmentType = "entra" | "dataverse";
+
+export type EnvironmentEntry = {
+    type: EnvironmentType;
+    identifier: string;
+    name: string;
+}
+
+export type PrefillData = {
+    additionalEnvironments: Array<EnvironmentEntry>;
+    emailAddress: string;
+}
+
+export type LicenseAcquisitionConfig = {
+    /**
+     * Pass 'url' to open the Ianus Guard self-service trial page or 'contact' to just pass an instruction
+     */
+    type: "url" | "contact";
+    /**
+     * Title for the contact dialog
+     * @default "Request a Trial License"
+     */
+    title?: string;
+    /**
+     * Instructions or message to show in the dialog, you can pass a string or any react element
+     * @example "To request a trial license, please send an email to trials@yourcompany.com with your organization details."
+     */
+    instruction: React.ReactElement | React.ReactNode;
+    /**
+     * Additional data to pass to Ianus Guard when acquiring a trial to ease license acquisition.
+     * You can add additional environments (such as the entra environment) and the current user's email address for example.
+     */
+    prefillData?: PrefillData;
+}
 
 export interface IIanusGuardProps {
     /**
@@ -56,6 +90,11 @@ export interface IIanusGuardProps {
      * For canvas apps, use the DataSourceInfo PowerFX function, for PCFs use pcfContext.utils.getEntityMetadata for loading the metadata followed by pcfContext.utils.hasEntityPrivilege for getting the permission result.
      */
     usagePermission?: boolean | null;
+
+    /**
+     * Pass this if you want to show instructions for the user on how to obtain a license
+     */
+    licenseAcquisitionConfig?: LicenseAcquisitionConfig;
 
     /**
      * Optionally pass a callback which is called when a license validation result was generated
@@ -114,7 +153,7 @@ const fetchOrganizationIdFromWebApi = async (webApi: ComponentFramework.WebApi) 
     return organization.organizationid.replace("{", "").replace("}", "").toLowerCase();
 };
 
-export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys, environmentType, environmentIdentifier, dataProvider, offlineDataProvider, usagePermission, onLicenseValidated, children }) => {
+export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId, publicKeys, environmentType, environmentIdentifier, dataProvider, offlineDataProvider, usagePermission, licenseAcquisitionConfig, onLicenseValidated, children }) => {
     const [ licenseState, licenseDispatch ] = useLicenseContext();
 
     // Stabilize callback references
@@ -131,6 +170,14 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
             publicKeysRef.current = publicKeys;
         }
     }, [publicKeys]);
+
+    const licenseAcquisitionConfigRef = React.useRef(licenseAcquisitionConfig);
+    React.useEffect(() => {
+        if (JSON.stringify(licenseAcquisitionConfig) !== JSON.stringify(licenseAcquisitionConfigRef.current))
+        {
+            licenseAcquisitionConfigRef.current = licenseAcquisitionConfig;
+        }
+    }, [licenseAcquisitionConfig]);
 
     const resolvedEnvironmentIdentifierRef = React.useRef<string | null>(null);
     const preventAutomaticReevaluation = React.useRef<boolean>(false);
@@ -238,12 +285,12 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
     }, [licenseDispatch, runValidation, handleValidationResult]);
 
     const onLicenseDialogFinally = React.useCallback(() => {
-        licenseDispatch({ type: "setLicenseDialogVisible", payload: false });
+        licenseDispatch({ type: "setVisibleDialog", payload: undefined });
         initLicenseValidation();
     }, [initLicenseValidation, licenseDispatch]);
 
     const onDebugFinally = React.useCallback(() => {
-        licenseDispatch({ type: "setDebugDialogVisible", payload: false });
+        licenseDispatch({ type: "setVisibleDialog", payload: undefined });
     }, [licenseDispatch]);
 
     const dataTotalResultCount = isDataset(dataProvider)
@@ -370,13 +417,17 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
 
     return licenseState.license?.isValid
         ? ( <>
-            { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onSubmit={onLicenseDialogFinally} onCancel={onLicenseDialogFinally} /> }
+            { licenseState.visibleDialog === "debug" && <DebugDialog publisherId={publisherId} productId={productId} environmentType={environmentType} environmentIdentifier={resolvedEnvironmentIdentifierRef.current || ""} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onDismiss={onDebugFinally} /> }
+            { licenseState.visibleDialog === "license_details" && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onSubmit={onLicenseDialogFinally} onCancel={onLicenseDialogFinally} /> }
+            { licenseState.visibleDialog === "license_acquisition" && <LicenseAcquisitionDialog publisherId={publisherId} productId={productId} environmentType={environmentType} environmentIdentifier={resolvedEnvironmentIdentifierRef.current || ""} config={licenseAcquisitionConfigRef.current} /> }
             { children }
         </> )
         : (
             <div style={{ display: "flex", width: "100%", height: "100%", flex: "1" }}>
-                { licenseState.licenseDialogVisible && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onSubmit={onLicenseDialogFinally} onCancel={onLicenseDialogFinally} /> }
-                { licenseState.debugDialogVisible && <DebugDialog publisherId={publisherId} productId={productId} environmentType={environmentType} environmentIdentifier={resolvedEnvironmentIdentifierRef.current || ""} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onDismiss={onDebugFinally} /> }
+                { licenseState.visibleDialog === "debug" && <DebugDialog publisherId={publisherId} productId={productId} environmentType={environmentType} environmentIdentifier={resolvedEnvironmentIdentifierRef.current || ""} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onDismiss={onDebugFinally} /> }
+                { licenseState.visibleDialog === "license_details" && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onSubmit={onLicenseDialogFinally} onCancel={onLicenseDialogFinally} /> }
+                { licenseState.visibleDialog === "license_acquisition" && <LicenseAcquisitionDialog publisherId={publisherId} productId={productId} environmentType={environmentType} environmentIdentifier={resolvedEnvironmentIdentifierRef.current || ""} config={licenseAcquisitionConfigRef.current} /> }
+    
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1}}>
                     { licenseState.license?.isValid === false && (
                         <MessageBar
@@ -391,8 +442,9 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                             }
                             actions={
                                 <div>
-                                    { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setLicenseDialogVisible", payload: true })}>Set License</MessageBarButton> }
-                                    { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setDebugDialogVisible", payload: true })}>Debug</MessageBarButton> }
+                                    { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_details" })}>Set License</MessageBarButton> }
+                                    { !licenseState.license?.isTerminalError && licenseAcquisitionConfigRef.current && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_acquisition" })}>Acquire a license</MessageBarButton> }
+                                    { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "debug" })}>Debug</MessageBarButton> }
                                 </div>
                             }
                         >

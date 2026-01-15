@@ -1,6 +1,6 @@
 {
   "name": "@ianua/ianus-dataverse-react-fluentui8",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Client-side validation for Ianus Guard licenses in Dataverse using react and FluentUi v8",
   "scripts": {
     "build": "tsup"

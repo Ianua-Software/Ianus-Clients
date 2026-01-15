@@ -68,7 +68,7 @@ export const DebugDialog: React.FC<IDebugDialogProps> = ({ publisherId, productI
 
     return (
         <Dialog
-            hidden={!licenseState?.debugDialogVisible}
+            hidden={licenseState?.visibleDialog !== "debug"}
             onDismiss={onDismiss}
             dialogContentProps={dialogContentProps}
             modalProps={modalProps}
