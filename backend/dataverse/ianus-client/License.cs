@@ -45,9 +45,6 @@ namespace Ianua.Ianus.Dataverse.Client
         [JsonPropertyName("env")]
         public List<EnvironmentIdentifier> Env { get; set; }
 
-        [JsonPropertyName("required_roles")]
-        public List<string> RequiredRoles { get; set; }
-
         [JsonPropertyName("iat")]
         public long Iat { get; set; }
 
@@ -57,7 +54,7 @@ namespace Ianua.Ianus.Dataverse.Client
         [JsonPropertyName("exp")]
         public long? Exp { get; set; }
 
-        [JsonPropertyName("custom")]
+        [JsonPropertyName("cus")]
         public Dictionary<string, object> Custom { get; set; }
 
         // Human-readable names for clarity
