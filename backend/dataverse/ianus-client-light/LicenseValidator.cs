@@ -33,6 +33,12 @@ namespace Ianua.Ianus.Dataverse.Client
                     License = response.Results.TryGetValue("License", out var license)
                         ? ( !string.IsNullOrEmpty(license as string) ? JsonSerializer.Deserialize<License>(license as string) : null )
                         : null,
+                    LicenseId = response.Results.TryGetValue("LicenseId", out var licenseId)
+                        ? ( Guid.TryParse(licenseId as string, out var parsedLicenseId) ? parsedLicenseId : null )
+                        : null,
+                    LicenseKey = response.Results.TryGetValue("LicenseKey", out var licenseKey)
+                        ? licenseKey as string ?? string.Empty
+                        : string.Empty
                 };
             }
             catch (Exception ex)

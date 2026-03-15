@@ -10,7 +10,7 @@
   <PropertyGroup>
     <!-- NuGet package metadata -->
     <PackageId>Ianua.Ianus.Dataverse.Client</PackageId>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Authors>Ianua Software</Authors>
     <Company>Ianua Software</Company>
     <Description>.NET client for validating Ianus Guard licenses</Description>

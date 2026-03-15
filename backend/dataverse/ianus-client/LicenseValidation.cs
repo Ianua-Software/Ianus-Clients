@@ -217,8 +217,7 @@ namespace Ianua.Ianus.Dataverse.Client
 
                 if (license != null)
                 {
-                    var licenseKey = license.GetAttributeValue<string>("ian_key");
-                    return ValidateLicense(publisherId, productId, publicKeys, licenseKey, service);
+                    return ValidateLicense(publisherId, productId, publicKeys, license, service);
                 }
                 else
                 {
@@ -239,8 +238,10 @@ namespace Ianua.Ianus.Dataverse.Client
             }
         }
 
-        private static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, IEnumerable<string> publicKeys, string licenseKey, IOrganizationService service)
+        private static LicenseValidationResult ValidateLicense(Guid publisherId, Guid productId, IEnumerable<string> publicKeys, Entity licenseRecord, IOrganizationService service)
         {
+            var licenseKey = licenseRecord?.GetAttributeValue<string>("ian_key");
+
             if (string.IsNullOrEmpty(licenseKey))
             {
                 return new LicenseValidationResult
@@ -299,7 +300,11 @@ namespace Ianua.Ianus.Dataverse.Client
 
                 if (isLicenseSignatureValid)
                 {
-                    return licenseValidationResult;
+                    return new LicenseValidationResult(licenseValidationResult)
+                    {
+                        LicenseId = licenseRecord.Id,
+                        LicenseKey = licenseKey
+                    };
                 }
             }
 

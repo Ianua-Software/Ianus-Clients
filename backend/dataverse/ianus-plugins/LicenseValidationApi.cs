@@ -174,12 +174,13 @@ namespace Ianua.Ianus.Dataverse.Plugins
                     localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = licenseValidationResult.IsValid;
                     localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = licenseValidationResult.Reason;
                     localPluginContext.PluginExecutionContext.OutputParameters["License"] = licenseValidationResult.IsValid ? JsonSerializer.Serialize(licenseValidationResult.License) : "";
+                    localPluginContext.PluginExecutionContext.OutputParameters["LicenseId"] = licenseValidationResult.LicenseId;
+                    localPluginContext.PluginExecutionContext.OutputParameters["LicenseKey"] = licenseValidationResult.LicenseKey;
                 }
                 catch (Exception ex)
                 {
                     localPluginContext.PluginExecutionContext.OutputParameters["IsValid"] = false;
                     localPluginContext.PluginExecutionContext.OutputParameters["Reason"] = ex.Message;
-                    localPluginContext.PluginExecutionContext.OutputParameters["License"] = "";
                 }
             }
             else
