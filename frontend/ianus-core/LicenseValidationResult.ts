@@ -1,4 +1,4 @@
-import { ILicenseClaims } from "./LicenseClaims";
+import { ILicense } from "./License";
 
 export type LicenseValidationError = {
     isValid: false;
@@ -8,7 +8,7 @@ export type LicenseValidationError = {
 
 export type LicenseValidationSuccess = {
     isValid: true;
-    claims: ILicenseClaims;
+    license: ILicense;
 }
 
 export type LicenseValidationResult = LicenseValidationError | LicenseValidationSuccess;

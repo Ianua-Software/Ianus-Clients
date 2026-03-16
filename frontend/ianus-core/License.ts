@@ -9,7 +9,7 @@ export interface IEnvironmentIdentifier
     name: string;
 }
 
-export interface ILicenseClaims {
+export interface ILicense {
     jti: string;
     iss: string;
     aud: string;

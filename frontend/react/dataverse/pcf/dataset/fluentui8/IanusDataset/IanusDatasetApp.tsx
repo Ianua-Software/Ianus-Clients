@@ -2,8 +2,8 @@ import * as React from 'react';
 import { DefaultButton, Label } from '@fluentui/react';
 import { IanusProvider } from "../../../../react-core/fluentui8/src/IanusProvider";
 import { useLicenseContext } from '../../../../react-core/fluentui8/src/IanusLicenseStateProvider';
-import { LicenseValidationResult } from '../../../../../../ianus-core/LicenseValidationResult';
 import { EnvironmentType } from '../../../../react-core/fluentui8/src/IanusGuard';
+import { DataverseLicenseValidationResult } from '../../../../react-core/fluentui8/src/DataverseLicenseValidationResult';
 
 export interface IIanusDatasetAppProps {
   publisherId: string;
@@ -15,7 +15,7 @@ export interface IIanusDatasetAppProps {
   dataProvider: ComponentFramework.WebApi;
   usagePermission?: boolean | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onLicenseValidated?: (result: LicenseValidationResult) => any
+  onLicenseValidated?: (result: DataverseLicenseValidationResult) => any
 }
 
 const IanusDatasetContent: React.FC = () => {
@@ -24,9 +24,9 @@ const IanusDatasetContent: React.FC = () => {
   return (
     <>
       <Label style={{ textWrap: "wrap" }}>
-        { `License check valid! Your protected content would render in this place. License Id: ${licenseState.license?.licenseId}` }
+        { `License check valid! Your protected content would render in this place. License Id: ${licenseState.licenseValidationResult?.licenseId}` }
       </Label>
-      <DefaultButton onClick={() => licenseDispatch({ type: "setLicenseDialogVisible", payload: true })}>Show license</DefaultButton>
+      <DefaultButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_details" })}>Show license</DefaultButton>
     </>
   );
 }

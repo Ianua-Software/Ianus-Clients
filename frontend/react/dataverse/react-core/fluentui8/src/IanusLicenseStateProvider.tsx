@@ -6,7 +6,7 @@ export type AvailableDialogs = "debug" | "license_details" | "license_acquisitio
 export type IanusLicenseDispatch = (action: Action) => void;
 
 export type IanusLicenseStateProps = {
-    license?: DataverseLicenseValidationResult;
+    licenseValidationResult?: DataverseLicenseValidationResult;
     visibleDialog?: AvailableDialogs;
 };
 
@@ -16,7 +16,7 @@ type Action = { type: "setLicense", payload: DataverseLicenseValidationResult | 
 function stateReducer(state: IanusLicenseStateProps, action: Action): IanusLicenseStateProps {
     switch (action.type) {
         case "setLicense": {
-            return { ...state, license: action.payload };
+            return { ...state, licenseValidationResult: action.payload };
         }
         case "setVisibleDialog": {
             return { ...state, visibleDialog: action.payload };

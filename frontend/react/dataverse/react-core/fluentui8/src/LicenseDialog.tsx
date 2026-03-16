@@ -39,8 +39,8 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
     const [ licenseState, licenseDispatch ] = useLicenseContext();
     
     const [ submitBlocked, setSubmitBlocked ] = React.useState(true);
-    const [ licenseKeyInput, setLicenseKeyInput ] = React.useState(licenseState.license?.licenseKey);
-    const [ licenseId, setLicenseId ] = React.useState(licenseState?.license?.licenseId);
+    const [ licenseKeyInput, setLicenseKeyInput ] = React.useState(licenseState.licenseValidationResult?.licenseKey);
+    const [ licenseId, setLicenseId ] = React.useState(licenseState?.licenseValidationResult?.licenseId);
     const [ error, setError ] = React.useState("");
     
     React.useEffect(() => {
@@ -202,29 +202,29 @@ export const LicenseDialog: React.FC<ILicenseDialogProps> = ({ publisherId, prod
                 </MessageBar>
             )}
             <TextField label='License Key' value={licenseKeyInput} onChange={(e, v) => { setLicenseKeyInput(v ?? ""); setSubmitBlocked(false); }} required />
-            { !!licenseState.license?.isValid &&
+            { !!licenseState.licenseValidationResult?.isValid &&
                 <Text>
                     <br />
                     <h3>License Information</h3>
                     <p>
-                        <span style={{fontWeight: 'bold'}}>License Publisher: </span> <span title={licenseState.license?.claims?.pub}>{licenseState.license?.claims?.pub_meta?.name}</span>
+                        <span style={{fontWeight: 'bold'}}>License Publisher: </span> <span title={licenseState.licenseValidationResult?.license?.pub}>{licenseState.licenseValidationResult?.license?.pub_meta?.name}</span>
                     </p>
                     <p>
-                        <span style={{fontWeight: 'bold'}}>Licensed Product: </span> <span title={licenseState.license?.claims.aud}>{licenseState.license?.claims?.prd_meta?.name}</span>
+                        <span style={{fontWeight: 'bold'}}>Licensed Product: </span> <span title={licenseState.licenseValidationResult?.license.aud}>{licenseState.licenseValidationResult?.license?.prd_meta?.name}</span>
                     </p>
                     <p>
-                        <span style={{fontWeight: 'bold'}}>Licensed Customer: </span> <span title={licenseState.license?.claims.sub}>{licenseState.license?.claims?.sub_meta?.name}</span>
+                        <span style={{fontWeight: 'bold'}}>Licensed Customer: </span> <span title={licenseState.licenseValidationResult?.license.sub}>{licenseState.licenseValidationResult?.license?.sub_meta?.name}</span>
                     </p>
                     <p>
-                        <span style={{fontWeight: 'bold'}}>Licensed Dataverse Environment: </span> <span>{licenseState.license?.claims?.env?.map(e => `${e.identifier} (${e.name})`).join(", ")}</span>
+                        <span style={{fontWeight: 'bold'}}>Licensed Dataverse Environment: </span> <span>{licenseState.licenseValidationResult?.license?.env?.map(e => `${e.identifier} (${e.name})`).join(", ")}</span>
                     </p>                
                     <p>
-                        <span style={{fontWeight: 'bold'}}>License expires after: </span> <span>{!licenseState.license?.claims?.exp ? "Never" : new Date(licenseState.license?.claims.exp * 1000).toISOString()}</span>
+                        <span style={{fontWeight: 'bold'}}>License expires after: </span> <span>{!licenseState.licenseValidationResult?.license?.exp ? "Never" : new Date(licenseState.licenseValidationResult?.license.exp * 1000).toISOString()}</span>
                     </p>
                     {
-                        licenseState.license?.claims?.cus &&
+                        licenseState.licenseValidationResult?.license?.cus &&
                             <p>
-                                <span style={{fontWeight: 'bold'}}>Custom claims: </span> <span>{JSON.stringify(licenseState.license.claims.cus)}</span>
+                                <span style={{fontWeight: 'bold'}}>Custom claims: </span> <span>{JSON.stringify(licenseState.licenseValidationResult.license.cus)}</span>
                             </p>
                     }
                 </Text>

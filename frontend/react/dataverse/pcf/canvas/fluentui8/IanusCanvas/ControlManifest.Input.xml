@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="Ianua" constructor="IanusCanvas" version="1.0.26" display-name-key="Ianus Guard Canvas" description-key="Ianus Guard for Canvas Apps" control-type="virtual" >
+  <control namespace="Ianua" constructor="IanusCanvas" version="1.0.27" display-name-key="Ianus Guard Canvas" description-key="Ianus Guard for Canvas Apps" control-type="virtual" >
     <!--external-service-usage node declares whether this 3rd party PCF control is using external service or not, if yes, this control will be considered as premium and please also add the external domain it is using.
     If it is not using any external service, please set the enabled="false" and DO NOT add any domain below. The "enabled" will be false by default.
     Example1:
@@ -32,7 +32,9 @@
 
     <property name="isValid" display-name-key="Is Valid" description-key="This returns the result of the license validation. If a valid license was found true, otherwise false" of-type="Whole.None" usage="output" required="false" />
     <property name="reason" display-name-key="Reason" description-key="This returns the result text of the license validation. If a valid license was found it is empty, otherwise you get a rejection reason" of-type="SingleLine.Text" usage="output" required="false" />
-    <property name="licenseJson" display-name-key="License Json" description-key="This returns the license JSON. If a valid license was found it is returned, otherwise empty" of-type="Multiple" usage="output" required="false" />
+    <property name="licenseJson" display-name-key="License Json" description-key="This returns the license JSON if a valid license was found, otherwise empty" of-type="Multiple" usage="output" required="false" />
+    <property name="licenseId" display-name-key="License Id" description-key="This returns the Dataverse Id of the ian_license record if a valid license was found, otherwise empty" of-type="Multiple" usage="output" required="false" />
+    <property name="licenseKey" display-name-key="License Json" description-key="This returns the ian_key license key of the ian_license record if a valid license was found, otherwise empty" of-type="Multiple" usage="output" required="false" />
     
     <resources>
       <code path="index.ts" order="1"/>

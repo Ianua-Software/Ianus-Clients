@@ -5,7 +5,6 @@ import { MessageBarButton } from '@fluentui/react/lib/Button';
 import { Spinner } from '@fluentui/react/lib/Spinner';
 
 import { validateLicense } from '../../../../../ianus-core/LicenseValidation';
-import { LicenseValidationResult } from '../../../../../ianus-core/LicenseValidationResult';
 
 import { LicenseDialog } from './LicenseDialog';
 import { useLicenseContext } from './IanusLicenseStateProvider';
@@ -103,7 +102,7 @@ export interface IIanusGuardProps {
      * @param result The result of this validation run
      * @returns Returned data will not be processed in any way
      */
-    onLicenseValidated?: (result: LicenseValidationResult) => unknown;
+    onLicenseValidated?: (result: DataverseLicenseValidationResult) => unknown;
 }
 
 export const isWebApi = (dataProvider: ComponentFramework.WebApi | ComponentFramework.PropertyTypes.DataSet | string): dataProvider is ComponentFramework.WebApi => {
@@ -389,7 +388,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
 
         if ( usagePermission != null && !usagePermission )
         {
-            const result: LicenseValidationResult = {
+            const result: DataverseLicenseValidationResult = {
                 isValid: false,
                 isTerminalError: true,
                 reason: "Your user is not enabled for using this product"
@@ -407,7 +406,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
         }
         else if (dataProvider.error)
         {
-            const result: LicenseValidationResult = {
+            const result: DataverseLicenseValidationResult = {
                 isValid: false,
                 isTerminalError: true,
                 reason: `Dataset error: ${dataProvider.errorMessage}`
@@ -418,7 +417,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
         }
     }, [dataProvider, dataProviderState, dataProviderSignature, initLicenseValidation, licenseDispatch, usagePermission, offlineDataProvider, offlineDataProviderState, offlineDataProviderSignature, handleValidationResult]);
 
-    return licenseState.license?.isValid
+    return licenseState.licenseValidationResult?.isValid
         ? ( <>
             { licenseState.visibleDialog === "debug" && <DebugDialog publisherId={publisherId} productId={productId} environmentType={environmentType} environmentIdentifier={resolvedEnvironmentIdentifierRef.current || ""} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onDismiss={onDebugFinally} /> }
             { licenseState.visibleDialog === "license_details" && <LicenseDialog publisherId={publisherId} productId={productId} dataProvider={dataProvider} offlineDataProvider={offlineDataProvider} onSubmit={onLicenseDialogFinally} onCancel={onLicenseDialogFinally} /> }
@@ -432,7 +431,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                 { licenseState.visibleDialog === "license_acquisition" && <LicenseAcquisitionDialog publisherId={publisherId} productId={productId} environmentType={environmentType} environmentIdentifier={resolvedEnvironmentIdentifierRef.current || ""} config={licenseAcquisitionConfigRef.current} /> }
     
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1}}>
-                    { licenseState.license?.isValid === false && (
+                    { licenseState.licenseValidationResult?.isValid === false && (
                         <MessageBar
                             messageBarType={MessageBarType.error}
                             isMultiline={true}
@@ -445,16 +444,16 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
                             }
                             actions={
                                 <div>
-                                    { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_details" })}>Set License</MessageBarButton> }
-                                    { !licenseState.license?.isTerminalError && licenseAcquisitionConfigRef.current && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_acquisition" })}>Acquire License</MessageBarButton> }
-                                    { !licenseState.license?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "debug" })}>Debug</MessageBarButton> }
+                                    { !licenseState.licenseValidationResult?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_details" })}>Set License</MessageBarButton> }
+                                    { !licenseState.licenseValidationResult?.isTerminalError && licenseAcquisitionConfigRef.current && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "license_acquisition" })}>Acquire License</MessageBarButton> }
+                                    { !licenseState.licenseValidationResult?.isTerminalError && <MessageBarButton onClick={() => licenseDispatch({ type: "setVisibleDialog", payload: "debug" })}>Debug</MessageBarButton> }
                                 </div>
                             }
                         >
-                            An error occured, please try again. Error information: { licenseState.license?.reason }
+                            An error occured, please try again. Error information: { licenseState.licenseValidationResult?.reason }
                         </MessageBar>
                     )}
-                    { !licenseState.license && <Spinner styles={{ root: { width: "auto" }}} label="Loading..." /> }
+                    { !licenseState.licenseValidationResult && <Spinner styles={{ root: { width: "auto" }}} label="Loading..." /> }
                 </div>
             </div>
         );

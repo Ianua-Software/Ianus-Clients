@@ -1,4 +1,4 @@
-import { ILicenseClaims } from "./LicenseClaims";
+import { ILicense } from "./License";
 import { LicenseValidationResult } from "./LicenseValidationResult";
 
 // from https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
@@ -29,7 +29,7 @@ const importRsaKey = (pem: string) => {
     );
 };
 
-const validateClaims = (publisherId: string, productId: string, environmentType: string, environmentIdentifier: string, license: ILicenseClaims): [boolean, string] => {
+const validateClaims = (publisherId: string, productId: string, environmentType: string, environmentIdentifier: string, license: ILicense): [boolean, string] => {
     if (!license) {
         return [false, "No license passed!"];
     }
@@ -161,7 +161,7 @@ export const validateLicense = async (
                     {
                         return {
                             isValid: true,
-                            claims: claimsJson
+                            license: claimsJson
                         };
                     }
                 }

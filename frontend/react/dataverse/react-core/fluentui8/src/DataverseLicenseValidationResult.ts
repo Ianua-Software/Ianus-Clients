@@ -1,4 +1,4 @@
-import { ILicenseClaims } from "../../../../../ianus-core/LicenseClaims";
+import { ILicense } from "../../../../../ianus-core/License";
 
 export type DataverseLicenseValidationError = {
     isValid: false;
@@ -10,7 +10,7 @@ export type DataverseLicenseValidationError = {
 
 export type DataverseLicenseValidationSuccess = {
     isValid: true;
-    claims: ILicenseClaims;
+    license: ILicense;
     licenseId: string;
     licenseKey: string;
 }

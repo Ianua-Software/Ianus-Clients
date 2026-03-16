@@ -1,6 +1,6 @@
 import * as React from "react";
-import { ILicenseClaims } from "../../../../../../ianus-core/LicenseClaims";
-import { LicenseValidationResult } from "../../../../../../ianus-core/LicenseValidationResult";
+import { ILicense } from "../../../../../../ianus-core/License";
+import { DataverseLicenseValidationResult } from "../../../../react-core/fluentui8/src/DataverseLicenseValidationResult";
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { IanusCanvasApp, IIanusCanvasAppProps } from "./IanusCanvasApp";
 
@@ -9,7 +9,9 @@ export class IanusCanvas implements ComponentFramework.ReactControl<IInputs, IOu
     private notifyOutputChanged: () => void;
     private isValid = 0;
     private reason = "";
-    private license: ILicenseClaims | null = null;
+    private license: ILicense | undefined = undefined;
+    private licenseId: string | undefined = undefined;
+    private licenseKey: string | undefined = undefined;
 
     /**
      * Empty constructor.
@@ -31,18 +33,20 @@ export class IanusCanvas implements ComponentFramework.ReactControl<IInputs, IOu
         this.notifyOutputChanged = notifyOutputChanged;
     }
 
-    private onLicenseValidated = ( result: LicenseValidationResult ): void => {
+    private onLicenseValidated = ( result: DataverseLicenseValidationResult ): void => {
         this.isValid = result.isValid ? 1 : 0;
 
         if (result.isValid)
         {
-            this.license = result.claims;
+            this.license = result.license;
+            this.licenseId = result.licenseId;
+            this.licenseKey = result.licenseKey;
             this.reason = "";
         }
         else
         {
             this.reason = result.reason;
-            this.license = null;
+            this.license = undefined;
         }
 
         this.notifyOutputChanged();
@@ -85,7 +89,9 @@ export class IanusCanvas implements ComponentFramework.ReactControl<IInputs, IOu
         return {
             isValid: this.isValid,
             reason: this.reason,
-            licenseJson: this.license ? JSON.stringify(this.license) : ""
+            licenseJson: this.license ? JSON.stringify(this.license) : undefined,
+            licenseId: this.licenseId,
+            licenseKey: this.licenseKey
         };
     }
 

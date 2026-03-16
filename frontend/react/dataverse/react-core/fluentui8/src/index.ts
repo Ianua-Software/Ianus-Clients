@@ -4,6 +4,6 @@ export * from './IanusLicenseStateProvider';
 export * from './IanusProvider';
 export * from './LicenseDialog';
 export * from '../../../../../ianus-core/GuidTools';
-export * from '../../../../../ianus-core/LicenseClaims';
+export * from '../../../../../ianus-core/License';
 export * from '../../../../../ianus-core/LicenseValidation';
 export * from '../../../../../ianus-core/LicenseValidationResult';
