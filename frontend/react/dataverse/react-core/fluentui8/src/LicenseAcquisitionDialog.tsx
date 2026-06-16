@@ -73,7 +73,7 @@ export const LicenseAcquisitionDialog: React.FC<ILicenseDialogProps> = ({
             // Ensure all environment identifiers are cleansed
             const cleansedEnvironments = allEnvironments.map(env => ({
                 ...env,
-                identifier: normalizeGuid(env.identifier) // ✅ Cleanse all
+                identifier: normalizeGuid(env.identifier)
             }));
 
             // Remove duplicates based on identifier

@@ -5,7 +5,11 @@
  * - Trims whitespace
  */
 export const normalizeGuid = (identifier: string): string => {
-    if (!identifier) return '';
+    if (!identifier)
+    {
+        return '';
+    }
+
     return identifier
         .replace(/[{}]/g, '') // Remove all { and }
         .toLowerCase()

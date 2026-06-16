@@ -206,7 +206,7 @@ export const IanusGuard: React.FC<IIanusGuardProps> = ({ publisherId, productId,
         try
         {
             // Resolve environment identifier (cache it)
-            if (resolvedEnvironmentIdentifierRef.current === null) {
+            if (!resolvedEnvironmentIdentifierRef.current) {
                 if (isWebApi(environmentIdentifier)) {
                     resolvedEnvironmentIdentifierRef.current = normalizeGuid(await fetchOrganizationIdFromWebApi(environmentIdentifier));
                 } else {
