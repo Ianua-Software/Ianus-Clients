@@ -291,27 +291,35 @@ namespace Ianua.Ianus.Dataverse.Client
 
             // Create the data to verify (headers.claims)
             var dataToVerify = Encoding.UTF8.GetBytes($"{encodedHeaders}.{encodedClaims}");
+            var didErrorsOccur = false;
 
             foreach (var publicKey in publicKeys)
             {
-                // Verify the signature
-                var key = ImportRsaPublicKey(publicKey);
-                var isLicenseSignatureValid = VerifySignature(key, dataToVerify, Base64UrlDecode(signature));
-
-                if (isLicenseSignatureValid)
+                try
                 {
-                    return new LicenseValidationResult(licenseValidationResult)
+                    // Verify the signature
+                    var key = ImportRsaPublicKey(publicKey);
+                    var isLicenseSignatureValid = VerifySignature(key, dataToVerify, Base64UrlDecode(signature));
+
+                    if (isLicenseSignatureValid)
                     {
-                        LicenseId = licenseRecord.Id,
-                        LicenseKey = licenseKey
-                    };
+                        return new LicenseValidationResult(licenseValidationResult)
+                        {
+                            LicenseId = licenseRecord.Id,
+                            LicenseKey = licenseKey
+                        };
+                    }
+                }
+                catch
+                {
+                    didErrorsOccur = true;
                 }
             }
 
             return new LicenseValidationResult
             {
                 IsValid = false,
-                Reason = "Invalid license signature: Verification failed!"
+                Reason = $"Invalid license signature: no configured key was able to verify this license!{(didErrorsOccur ? " (Errors occurred while trying to verify the license signature)" : string.Empty)}"
             };
         }
     }

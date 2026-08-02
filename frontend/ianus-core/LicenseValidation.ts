@@ -47,7 +47,7 @@ const validateClaims = (publisherId: string, productId: string, environmentType:
     const validAudience = "ianusguard";
 
     if (license.aud !== validAudience) {
-        return [false, `Invalid license audience: Audience must be '${publisherId}'`];
+        return [false, `Invalid license audience: Audience must be '${validAudience}'`];
     }
 
     if (license.pub !== publisherId) {
@@ -143,18 +143,16 @@ export const validateLicense = async (
 
         const dataToVerify = new TextEncoder().encode(encodedHeaders + "." + encodedClaims);
         const signatureToVerify = base64url_decode(signature);
+        
+        let didErrorsOccur = false;
 
         for( const publicKey of publicKeys )
         {
             if ( publicKey )
-            {
-                let keyImportSuccess = false;
-                
+            {                
                 try
                 {
                     const key = await importRsaKey(publicKey);
-                    keyImportSuccess = true;
-
                     const isLicenseSignatureValid = await verifySignature(key, dataToVerify, signatureToVerify);
 
                     if (isLicenseSignatureValid === true)
@@ -167,13 +165,7 @@ export const validateLicense = async (
                 }
                 catch
                 {
-                    return {
-                        isValid: false,
-                        isTerminalError: false,
-                        reason: keyImportSuccess
-                            ? "An error occured while verifying your license's signature"
-                            : "An error occured while importing your public key"
-                    };
+                    didErrorsOccur = true;
                 }
             }
         }
@@ -181,7 +173,7 @@ export const validateLicense = async (
         return {
             isValid: false,
             isTerminalError: false,
-            reason: "Invalid license signature: Verification failed!"
+            reason: `Invalid license signature: no configured key was able to verify this license!${didErrorsOccur ? " (Errors occurred while trying to verify the license signature)" : ""}`
         };
     }
     catch {
